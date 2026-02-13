@@ -120,8 +120,7 @@ function Library:CreateWindow(title, initialSize)
         topBarShapes.Bottom.Size = Vector2.new(w, th - r)
         titleText.Position = mainPos + Vector2.new(15, 12)
 
-        local currentTitleW = titleText.TextBounds.X
-        if currentTitleW > window.TitleWidth then window.TitleWidth = currentTitleW end
+        window.TitleWidth = titleText.TextBounds.X
         local sepX = 15 + window.TitleWidth + 10
         local sepY = mainPos.Y + 10
         local sepH = 20
