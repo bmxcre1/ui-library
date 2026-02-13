@@ -120,12 +120,7 @@ function Library:CreateWindow(title, initialSize)
         topBarShapes.Bottom.Size = Vector2.new(w, th - r)
         titleText.Position = mainPos + Vector2.new(15, 12)
 
-        local currentW = titleText.TextBounds.X
-        if currentW > 20 and currentW < 400 then
-            window.TitleWidth = currentW
-        elseif window.TitleWidth == 0 then
-            window.TitleWidth = 100
-        end
+        window.TitleWidth = math.clamp(titleText.TextBounds.X, 100, 300)
         
         local sepX = 15 + window.TitleWidth + 10
         local sepY = mainPos.Y + 10
@@ -643,17 +638,17 @@ function Library:CreateWindow(title, initialSize)
                      end
                  end
                  
+                 local blockingElement = nil
                  if window.ActiveTab then
-                     local focusedElement = nil
                      for _, elem in ipairs(window.ActiveTab.Elements) do
                          if elem.Type == "Dropdown" and elem.Open then
-                             focusedElement = elem
+                             blockingElement = elem
                              break
                          end
                      end
-                 
+                     
                      for _, elem in ipairs(window.ActiveTab.Elements) do
-                         if focusedElement and elem ~= focusedElement then continue end
+                         if blockingElement and elem ~= blockingElement then continue end
                          if elem.Type == "Button" then
                              if isMouseOver(elem.Border.Position, elem.Border.Size) then
                                  task.spawn(elem.Callback)
