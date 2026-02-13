@@ -369,7 +369,9 @@ function Library:CreateWindow(title, initialSize)
                  Callback = callback, 
                  Options = options, 
                  Open = false,
-                 Selected = options[1] or ""
+                 Selected = options[1] or "",
+                 ScrollIndex = 1,
+                 MaxVisible = 6
              }
              
              local dBg = Drawing.new("Square")
@@ -393,6 +395,18 @@ function Library:CreateWindow(title, initialSize)
              dArrow.Visible = false
              drop.Arrow = dArrow
              
+             local sUp = Drawing.new("Triangle")
+             sUp.Color = colors.Text
+             sUp.Filled = true
+             sUp.Visible = false
+             drop.ScrollUp = sUp
+             
+             local sDown = Drawing.new("Triangle")
+             sDown.Color = colors.Text
+             sDown.Filled = true
+             sDown.Visible = false
+             drop.ScrollDown = sDown
+             
              drop.OptionDrawings = {}
              
              function drop:Update(pos)
@@ -413,8 +427,28 @@ function Library:CreateWindow(title, initialSize)
                 
                 if drop.Open then
                      local currentOptY = pos.Y + 40
-                     for i, opt in ipairs(drop.Options) do
-                         if not drop.OptionDrawings[i] then
+                     local centerX = pos.X + dBg.Size.X / 2
+                     
+                     if drop.ScrollIndex > 1 then
+                         local arrowY = currentOptY + 10
+                         drop.ScrollUp.Visible = true
+                         drop.ScrollUp.PointA = Vector2.new(centerX, arrowY - 5)
+                         drop.ScrollUp.PointB = Vector2.new(centerX - 6, arrowY + 5)
+                         drop.ScrollUp.PointC = Vector2.new(centerX + 6, arrowY + 5)
+                         currentOptY = currentOptY + 20
+                     else
+                         drop.ScrollUp.Visible = false
+                     end
+
+                     local drawnCount = 0
+                     for i = 0, drop.MaxVisible - 1 do
+                         local realIdx = drop.ScrollIndex + i
+                         if realIdx > #drop.Options then break end
+                         
+                         drawnCount = drawnCount + 1
+                         local drawIdx = drawnCount
+                         
+                         if not drop.OptionDrawings[drawIdx] then
                              local optBg = Drawing.new("Square")
                              optBg.Color = Color3.fromRGB(28, 28, 28)
                              optBg.Filled = true
@@ -427,19 +461,19 @@ function Library:CreateWindow(title, initialSize)
                              optTxt.Visible = false
                              optTxt.Center = true 
                              
-                             drop.OptionDrawings[i] = {Bg = optBg, Txt = optTxt}
+                             drop.OptionDrawings[drawIdx] = {Bg = optBg, Txt = optTxt}
                          end
                          
-                         local d = drop.OptionDrawings[i]
+                         local d = drop.OptionDrawings[drawIdx]
                          d.Bg.Visible = true
                          d.Bg.Position = Vector2.new(pos.X, currentOptY)
                          d.Bg.Size = Vector2.new(dBg.Size.X, 24)
                          
                          d.Txt.Visible = true
                          d.Txt.Position = Vector2.new(pos.X + dBg.Size.X/2, currentOptY + 12)
-                         d.Txt.Text = opt
+                         d.Txt.Text = drop.Options[realIdx]
                          
-                         if opt == drop.Selected then
+                         if drop.Options[realIdx] == drop.Selected then
                              d.Txt.Color = colors.Accent
                          else
                              d.Txt.Color = colors.Text
@@ -447,9 +481,28 @@ function Library:CreateWindow(title, initialSize)
                          
                          currentOptY = currentOptY + 26 
                      end
-                     drop.Height = 40 + (#drop.Options * 26)
+                     
+                     for i = drawnCount + 1, #drop.OptionDrawings do
+                         drop.OptionDrawings[i].Bg.Visible = false
+                         drop.OptionDrawings[i].Txt.Visible = false
+                     end
+                     
+                     if drop.ScrollIndex + drop.MaxVisible <= #drop.Options then
+                         local arrowY = currentOptY + 10
+                         drop.ScrollDown.Visible = true
+                         drop.ScrollDown.PointA = Vector2.new(centerX, arrowY + 5)
+                         drop.ScrollDown.PointB = Vector2.new(centerX - 6, arrowY - 5)
+                         drop.ScrollDown.PointC = Vector2.new(centerX + 6, arrowY - 5)
+                         currentOptY = currentOptY + 20
+                     else
+                         drop.ScrollDown.Visible = false
+                     end
+                     
+                     drop.Height = currentOptY - pos.Y
                 else
                      drop.Height = 40
+                     drop.ScrollUp.Visible = false
+                     drop.ScrollDown.Visible = false
                      for _, d in pairs(drop.OptionDrawings) do
                          d.Bg.Visible = false
                          d.Txt.Visible = false
@@ -463,13 +516,18 @@ function Library:CreateWindow(title, initialSize)
                  dArrow.Visible = vis
                  
                  if vis and drop.Open then
-                     for i = 1, #drop.Options do
+                     if drop.ScrollIndex > 1 then drop.ScrollUp.Visible = true end
+                     if drop.ScrollIndex + drop.MaxVisible <= #drop.Options then drop.ScrollDown.Visible = true end
+                     
+                     for i = 1, math.min(drop.MaxVisible, #drop.Options) do
                          if drop.OptionDrawings[i] then
                              drop.OptionDrawings[i].Bg.Visible = true
                              drop.OptionDrawings[i].Txt.Visible = true
                          end
                      end
                  else
+                     drop.ScrollUp.Visible = false
+                     drop.ScrollDown.Visible = false
                      for _, d in pairs(drop.OptionDrawings) do
                          d.Bg.Visible = false
                          d.Txt.Visible = false
@@ -560,17 +618,38 @@ function Library:CreateWindow(title, initialSize)
                          elseif elem.Type == "Dropdown" then
                              local clickedOption = false
                              if elem.Open then
-                                  local optBaseY = elem.Bg.Position.Y + 40
-                                  for i, opt in ipairs(elem.Options) do
-                                     local optPos = Vector2.new(elem.Bg.Position.X, optBaseY) 
-                                     if isMouseOver(optPos, Vector2.new(elem.Bg.Size.X, 24)) then
-                                         elem.Selected = opt
-                                         elem.Open = false
-                                         clickedOption = true
-                                         task.spawn(function() elem.Callback(opt) end)
-                                         break
-                                     end
-                                     optBaseY = optBaseY + 26
+                                  local currentY = elem.Bg.Position.Y + 40
+                                  
+                                  if elem.ScrollIndex > 1 then
+                                      if isMouseOver(Vector2.new(elem.Bg.Position.X, currentY), Vector2.new(elem.Bg.Size.X, 20)) then
+                                          elem.ScrollIndex = math.max(1, elem.ScrollIndex - 1)
+                                          clickedOption = true
+                                      end
+                                      currentY = currentY + 20
+                                  end
+                                  
+                                  if not clickedOption then
+                                      for i = 0, elem.MaxVisible - 1 do
+                                          local realIdx = elem.ScrollIndex + i
+                                          if realIdx > #elem.Options then break end
+                                          
+                                          local optPos = Vector2.new(elem.Bg.Position.X, currentY) 
+                                          if isMouseOver(optPos, Vector2.new(elem.Bg.Size.X, 24)) then
+                                              elem.Selected = elem.Options[realIdx]
+                                              elem.Open = false
+                                              clickedOption = true
+                                              task.spawn(function() elem.Callback(elem.Selected) end)
+                                              break
+                                          end
+                                          currentY = currentY + 26
+                                      end
+                                  end
+                                  
+                                  if not clickedOption and (elem.ScrollIndex + elem.MaxVisible <= #elem.Options) then
+                                      if isMouseOver(Vector2.new(elem.Bg.Position.X, currentY), Vector2.new(elem.Bg.Size.X, 20)) then
+                                          elem.ScrollIndex = math.min(#elem.Options - elem.MaxVisible + 1, elem.ScrollIndex + 1)
+                                          clickedOption = true
+                                      end
                                   end
                              end
                              
