@@ -408,6 +408,13 @@ function Library:CreateWindow(title, initialSize)
              sDown.Visible = false
              sDown.ZIndex = 3
              drop.ScrollDown = sDown
+
+             local dListBg = Drawing.new("Square")
+             dListBg.Filled = true
+             dListBg.Color = Color3.fromRGB(28, 28, 28)
+             dListBg.Visible = false
+             dListBg.ZIndex = 2
+             drop.ListBg = dListBg
              
              drop.OptionDrawings = {}
              
@@ -502,9 +509,14 @@ function Library:CreateWindow(title, initialSize)
                          drop.ScrollDown.Visible = false
                      end
                      
+                     drop.ListBg.Visible = true
+                     drop.ListBg.Position = Vector2.new(pos.X, pos.Y + 40)
+                     drop.ListBg.Size = Vector2.new(dBg.Size.X, currentOptY - (pos.Y + 40))
+
                      drop.Height = 40
                 else
                      drop.Height = 40
+                     drop.ListBg.Visible = false
                      drop.ScrollUp.Visible = false
                      drop.ScrollDown.Visible = false
                      for _, d in pairs(drop.OptionDrawings) do
@@ -520,6 +532,7 @@ function Library:CreateWindow(title, initialSize)
                  dArrow.Visible = vis
                  
                  if vis and drop.Open then
+                     drop.ListBg.Visible = true
                      if drop.ScrollIndex > 1 then drop.ScrollUp.Visible = true end
                      if drop.ScrollIndex + drop.MaxVisible <= #drop.Options then drop.ScrollDown.Visible = true end
                      
@@ -530,6 +543,7 @@ function Library:CreateWindow(title, initialSize)
                          end
                      end
                  else
+                     drop.ListBg.Visible = false
                      drop.ScrollUp.Visible = false
                      drop.ScrollDown.Visible = false
                      for _, d in pairs(drop.OptionDrawings) do
