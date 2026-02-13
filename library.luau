@@ -399,12 +399,14 @@ function Library:CreateWindow(title, initialSize)
              sUp.Color = colors.Text
              sUp.Filled = true
              sUp.Visible = false
+             sUp.ZIndex = 3
              drop.ScrollUp = sUp
              
              local sDown = Drawing.new("Triangle")
              sDown.Color = colors.Text
              sDown.Filled = true
              sDown.Visible = false
+             sDown.ZIndex = 3
              drop.ScrollDown = sDown
              
              drop.OptionDrawings = {}
@@ -453,6 +455,7 @@ function Library:CreateWindow(title, initialSize)
                              optBg.Color = Color3.fromRGB(28, 28, 28)
                              optBg.Filled = true
                              optBg.Visible = false
+                             optBg.ZIndex = 2
                              
                              local optTxt = Drawing.new("Text")
                              optTxt.Color = colors.Text
@@ -460,6 +463,7 @@ function Library:CreateWindow(title, initialSize)
                              optTxt.Font = Drawing.Fonts.System
                              optTxt.Visible = false
                              optTxt.Center = true 
+                             optTxt.ZIndex = 3
                              
                              drop.OptionDrawings[drawIdx] = {Bg = optBg, Txt = optTxt}
                          end
@@ -498,7 +502,7 @@ function Library:CreateWindow(title, initialSize)
                          drop.ScrollDown.Visible = false
                      end
                      
-                     drop.Height = currentOptY - pos.Y
+                     drop.Height = 40
                 else
                      drop.Height = 40
                      drop.ScrollUp.Visible = false
