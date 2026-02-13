@@ -748,7 +748,7 @@ function Library:ShowDemo()
     
     Tab1:CreateSection("Features")
     
-    Tab1:CreateButton("Print", function()
+    Tab1:CreateButton("fat", function()
         print("Hello from Matcha!")
     end)
     
