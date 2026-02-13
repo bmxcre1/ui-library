@@ -590,18 +590,13 @@ function Library:CreateWindow(title, initialSize)
         return tab
     end
 
-    function window:Destroy()
-        window.Destroyed = true
-    end
-
     task.spawn(function()
         local sliderDragging = nil 
         local toggleDebounce = false
 
-        while not window.Destroyed do
-            task.wait()
-            
+        while true do
             if window.Destroyed then break end
+            task.wait()
             
             if iskeypressed(0x5A) then
                 if not toggleDebounce then
@@ -798,34 +793,90 @@ function Library:CreateWindow(title, initialSize)
             wasMousePressed = isPressed
             updatePositions()
         end
-        end
-        
-        for _, s in pairs(mainShapes) do s:Remove() end
-        for _, s in pairs(topBarShapes) do s:Remove() end
-        titleText:Remove()
-        separator:Remove()
-        for _, tab in ipairs(window.Tabs) do
-             tab.Btn:Remove()
-             for _, elem in ipairs(tab.Elements) do
-                 if elem.Type == "Section" then
-                     elem.Txt:Remove(); elem.Line:Remove()
-                 elseif elem.Type == "Button" then
-                     elem.Border:Remove(); elem.Bg:Remove(); elem.Txt:Remove()
-                 elseif elem.Type == "Toggle" then
-                     elem.Outer:Remove(); elem.Hole:Remove(); elem.Inner:Remove(); elem.Txt:Remove()
-                 elseif elem.Type == "Slider" then
-                     elem.Bg:Remove(); elem.Fill:Remove(); elem.Knob:Remove(); elem.Txt:Remove(); elem.Val:Remove()
-                 elseif elem.Type == "Dropdown" then
-                     elem.Bg:Remove(); elem.Txt:Remove(); elem.Arrow:Remove()
-                     elem.ScrollUp:Remove(); elem.ScrollDown:Remove(); elem.ListBg:Remove()
-                     for _, d in pairs(elem.OptionDrawings) do if d.Bg then d.Bg:Remove() end if d.Txt then d.Txt:Remove() end end
-                 end
-             end
-        end
     end)
     
+    function window:Destroy()
+        window.Destroyed = true
+        
+        for _, s in pairs(mainShapes) do pcall(function() s:Remove() end) end
+        for _, s in pairs(topBarShapes) do pcall(function() s:Remove() end) end
+        pcall(function() titleText:Remove() end)
+        pcall(function() separator:Remove() end)
+        
+        for _, tab in ipairs(window.Tabs) do
+            pcall(function() tab.Btn:Remove() end)
+            for _, elem in ipairs(tab.Elements) do
+                if elem.Type == "Section" then
+                     pcall(function() elem.Txt:Remove() end)
+                     pcall(function() elem.Line:Remove() end)
+                elseif elem.Type == "Button" then
+                     pcall(function() elem.Border:Remove() end)
+                     pcall(function() elem.Bg:Remove() end)
+                     pcall(function() elem.Txt:Remove() end)
+                elseif elem.Type == "Toggle" then
+                     pcall(function() elem.Outer:Remove() end)
+                     pcall(function() elem.Hole:Remove() end)
+                     pcall(function() elem.Inner:Remove() end)
+                     pcall(function() elem.Txt:Remove() end)
+                elseif elem.Type == "Slider" then
+                     pcall(function() elem.Bg:Remove() end)
+                     pcall(function() elem.Fill:Remove() end)
+                     pcall(function() elem.Knob:Remove() end)
+                     pcall(function() elem.Txt:Remove() end)
+                     pcall(function() elem.Val:Remove() end)
+                elseif elem.Type == "Dropdown" then
+                     pcall(function() elem.Bg:Remove() end)
+                     pcall(function() elem.Txt:Remove() end)
+                     pcall(function() elem.Arrow:Remove() end)
+                     pcall(function() elem.ScrollUp:Remove() end)
+                     pcall(function() elem.ScrollDown:Remove() end)
+                     pcall(function() elem.ListBg:Remove() end)
+                     for _, d in pairs(elem.OptionDrawings) do
+                         pcall(function() d.Bg:Remove() end)
+                         pcall(function() d.Txt:Remove() end)
+                     end
+                end
+            end
+        end
+    end
+
     return window
 end
 
+function Library:ShowDemo()
+    local Win = Library:CreateWindow("Demo", Vector2.new(500, 400))
+    local Tab1 = Win:CreateTab("Main")
+    local Tab2 = Win:CreateTab("Settings")
+    
+    Tab1:CreateSection("Features")
+    
+    Tab1:CreateButton("fat", function()
+        print("Hello from Matcha!")
+    end)
+    
+     Tab1:CreateToggle("Enable Feature", function(state)
+        print("Feature Enabled:", state)
+    end)
+    
+    Tab1:CreateSection("Configuration")
+    
+    Tab1:CreateSlider("WalkSpeed", 16, 100, function(val)
+        print("Speed:", val)
+    end)
+    
+    Tab1:CreateDropdown("Theme", {"Dark", "Light", "Midnight", "Ocean"}, function(val)
+        print("Theme selected:", val)
+    end)
+    
+    Tab2:CreateSection("Preferences")
+    
+    Tab2:CreateButton("Reset Config", function()
+        print("Config Reset")
+    end)
+    
+    Tab2:CreateToggle("Dark Mode", function(state)
+        print("Dark Mode:", state)
+    end)
+end
 
 return Library
