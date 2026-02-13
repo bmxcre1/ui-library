@@ -362,14 +362,15 @@ function Library:CreateWindow(title, initialSize)
              return sld
         end
         
-        function tab:CreateDropdown(text, options, callback)
+        function tab:CreateDropdown(text, options, callback, multi)
              local drop = { 
                  Type = "Dropdown", 
                  Height = 40,
                  Callback = callback, 
                  Options = options, 
                  Open = false,
-                 Selected = options[1] or "",
+                 Selected = multi and {} or (options[1] or ""),
+                 Multi = multi or false,
                  ScrollIndex = 1,
                  MaxVisible = 6
              }
@@ -382,7 +383,7 @@ function Library:CreateWindow(title, initialSize)
              drop.Bg = dBg
              
              local dTxt = Drawing.new("Text")
-             dTxt.Text = text .. ": " .. drop.Selected
+             dTxt.Text = text .. ": " .. (drop.Multi and "None" or drop.Selected)
              dTxt.Size = 14
              dTxt.Color = colors.Text
              dTxt.Font = Drawing.Fonts.System
@@ -421,7 +422,24 @@ function Library:CreateWindow(title, initialSize)
              function drop:Update(pos)
                 dBg.Position = pos
                 dTxt.Position = pos + Vector2.new(10, 11)
-                dTxt.Text = text .. ": " .. drop.Selected
+                
+                local displayStr = ""
+                if drop.Multi then
+                    local selectedCount = 0
+                    local first = nil
+                    for k, v in pairs(drop.Selected) do
+                        if v then
+                             selectedCount = selectedCount + 1
+                             if not first then first = k end
+                        end
+                    end
+                    if selectedCount == 0 then displayStr = "None"
+                    elseif selectedCount == 1 then displayStr = first
+                    else displayStr = selectedCount .. " Selected" end
+                else
+                    displayStr = drop.Selected
+                end
+                dTxt.Text = text .. ": " .. displayStr
                 
                 local arrowCenter = pos + Vector2.new(dBg.Size.X - 20, 18)
                 if drop.Open then
@@ -484,7 +502,14 @@ function Library:CreateWindow(title, initialSize)
                          d.Txt.Position = Vector2.new(pos.X + dBg.Size.X/2, currentOptY + 12)
                          d.Txt.Text = drop.Options[realIdx]
                          
-                         if drop.Options[realIdx] == drop.Selected then
+                         local isSelected = false
+                         if drop.Multi then
+                             isSelected = drop.Selected[drop.Options[realIdx]]
+                         else
+                             isSelected = (drop.Options[realIdx] == drop.Selected)
+                         end
+                         
+                         if isSelected then
                              d.Txt.Color = colors.Accent
                          else
                              d.Txt.Color = colors.Text
@@ -653,10 +678,20 @@ function Library:CreateWindow(title, initialSize)
                                           
                                           local optPos = Vector2.new(elem.Bg.Position.X, currentY) 
                                           if isMouseOver(optPos, Vector2.new(elem.Bg.Size.X, 24)) then
-                                              elem.Selected = elem.Options[realIdx]
-                                              elem.Open = false
+                                              local val = elem.Options[realIdx]
+                                              if elem.Multi then
+                                                  if elem.Selected[val] then
+                                                      elem.Selected[val] = nil
+                                                  else
+                                                      elem.Selected[val] = true
+                                                  end
+                                                  task.spawn(function() elem.Callback(elem.Selected) end)
+                                              else
+                                                  elem.Selected = val
+                                                  elem.Open = false
+                                                  task.spawn(function() elem.Callback(elem.Selected) end)
+                                              end
                                               clickedOption = true
-                                              task.spawn(function() elem.Callback(elem.Selected) end)
                                               break
                                           end
                                           currentY = currentY + 26
