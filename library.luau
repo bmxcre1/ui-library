@@ -3,13 +3,6 @@ local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
 local Library = {}
-Library.__index = Library
-
-function Library.new()
-	local self = setmetatable({}, Library)
-	return self
-end
-
 
 function Library:CreateWindow(title, initialSize)
 	local window = {}
@@ -621,32 +614,32 @@ function Library:ShowDemo()
     
     Tab1:CreateSection("Features")
     
-    Tab1:CreateButton("Print", function()
-        print("print test")
+    Tab1:CreateButton("fat", function()
+        print("Hello from Matcha!")
     end)
     
-     Tab1:CreateToggle("Toggle Feature", function(state)
-        print("feature toggled:", state)
+     Tab1:CreateToggle("Enable Feature", function(state)
+        print("Feature Enabled:", state)
     end)
     
     Tab1:CreateSection("Configuration")
     
     Tab1:CreateSlider("WalkSpeed", 16, 100, function(val)
-        print("walkspeed:", val)
+        print("Speed:", val)
     end)
     
     Tab1:CreateDropdown("Theme", {"Dark", "Light", "Midnight", "Ocean"}, function(val)
-        print("theme selected:", val)
+        print("Theme selected:", val)
     end)
     
     Tab2:CreateSection("Preferences")
     
     Tab2:CreateButton("Reset Config", function()
-        print("config reset")
+        print("Config Reset")
     end)
     
     Tab2:CreateToggle("Dark Mode", function(state)
-        print("dark mode enabled:", state)
+        print("Dark Mode:", state)
     end)
 end
 
