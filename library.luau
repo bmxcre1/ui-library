@@ -595,6 +595,25 @@ function Library:CreateWindow(title, initialSize)
         while true do
             task.wait()
             
+            if not window.Opened then
+                for _, s in pairs(mainShapes) do s.Visible = false end
+                for _, s in pairs(topBarShapes) do s.Visible = false end
+                titleText.Visible = false
+                separator.Visible = false
+                for _, tab in ipairs(window.Tabs) do
+                    tab.Btn.Visible = false
+                    for _, elem in ipairs(tab.Elements) do elem:SetVisible(false) end
+                end
+                window.Dragging = false
+                sliderDragging = nil
+                continue
+            end
+            
+            for _, s in pairs(mainShapes) do s.Visible = true end
+            for _, s in pairs(topBarShapes) do s.Visible = true end
+            titleText.Visible = true
+            separator.Visible = true
+            
             for _, tab in ipairs(window.Tabs) do
                 local isTabActive = (window.ActiveTab == tab)
                 
@@ -618,109 +637,126 @@ function Library:CreateWindow(title, initialSize)
             end
             
             if isPressed and not wasMousePressed then
-                 local titleBar = { Position = mainPos, Size = Vector2.new(mainSize.X, 40) }
-                 if isMouseOver(titleBar.Position, titleBar.Size) and not sliderDragging then
-                     local clickedTab = false
-                     for _, tab in ipairs(window.Tabs) do
-                         local btnPos = tab.Btn.Position
-                         local clickW = tab.Width
-                         if isMouseOver(btnPos, Vector2.new(clickW + 5, 20)) then
-                             window.ActiveTab = tab
-                             clickedTab = true
-                             break
+                local consumed = false
+                local blockingDropdown = nil
+                
+                if window.ActiveTab then
+                    for _, elem in ipairs(window.ActiveTab.Elements) do
+                        if elem.Type == "Dropdown" and elem.Open then
+                            blockingDropdown = elem
+                            break
+                        end
+                    end
+                end
+                
+                if blockingDropdown then
+                    local overHeader = isMouseOver(blockingDropdown.Bg.Position, blockingDropdown.Bg.Size)
+                    local overList = isMouseOver(blockingDropdown.ListBg.Position, blockingDropdown.ListBg.Size)
+                    
+                    if not overHeader and not overList then
+                        blockingDropdown.Open = false
+                        consumed = true
+                    end
+                end
+                
+                if not consumed then
+                     local titleBar = { Position = mainPos, Size = Vector2.new(mainSize.X, 40) }
+                     if not blockingDropdown and isMouseOver(titleBar.Position, titleBar.Size) and not sliderDragging then
+                         local clickedTab = false
+                         for _, tab in ipairs(window.Tabs) do
+                             local btnPos = tab.Btn.Position
+                             local clickW = tab.Width
+                             if isMouseOver(btnPos, Vector2.new(clickW + 5, 20)) then
+                                 window.ActiveTab = tab
+                                 clickedTab = true
+                                 break
+                             end
+                         end
+                         
+                         if not clickedTab then
+                             window.Dragging = true
+                             window.DragStart = mousePos
+                             window.StartPos = mainPos
                          end
                      end
                      
-                     if not clickedTab then
-                         window.Dragging = true
-                         window.DragStart = mousePos
-                         window.StartPos = mainPos
-                     end
-                 end
-                 
-                 local blockingElement = nil
-                 if window.ActiveTab then
-                     for _, elem in ipairs(window.ActiveTab.Elements) do
-                         if elem.Type == "Dropdown" and elem.Open then
-                             blockingElement = elem
-                             break
-                         end
-                     end
-                     
-                     for _, elem in ipairs(window.ActiveTab.Elements) do
-                         if blockingElement and elem ~= blockingElement then continue end
-                         if elem.Type == "Button" then
-                             if isMouseOver(elem.Border.Position, elem.Border.Size) then
-                                 task.spawn(elem.Callback)
-                                 elem.Bg.Color = Color3.fromRGB(60, 60, 60)
-                                 task.delay(0.1, function() elem.Bg.Color = colors.ElementBg end)
-                             end
-                         elseif elem.Type == "Toggle" then
-                             local clickAreaPos = elem.Txt.Position - Vector2.new(30, 5)
-                             local clickAreaSize = Vector2.new(200, 25)
-                             if isMouseOver(clickAreaPos, clickAreaSize) then
-                                 elem.State = not elem.State
-                                 elem.Inner.Visible = elem.State
-                                 task.spawn(function() elem.Callback(elem.State) end)
-                             end
-                         elseif elem.Type == "Slider" then
-                             if isMouseOver(elem.Bg.Position - Vector2.new(0, 10), elem.Bg.Size + Vector2.new(0, 20)) then
-                                 sliderDragging = elem
-                             end
-                         elseif elem.Type == "Dropdown" then
-                             local clickedOption = false
-                             if elem.Open then
-                                  local currentY = elem.Bg.Position.Y + 40
-                                  
-                                  if elem.ScrollIndex > 1 then
-                                      if isMouseOver(Vector2.new(elem.Bg.Position.X, currentY), Vector2.new(elem.Bg.Size.X, 20)) then
-                                          elem.ScrollIndex = math.max(1, elem.ScrollIndex - 1)
-                                          clickedOption = true
-                                      end
-                                      currentY = currentY + 20
-                                  end
-                                  
-                                  if not clickedOption then
-                                      for i = 0, elem.MaxVisible - 1 do
-                                          local realIdx = elem.ScrollIndex + i
-                                          if realIdx > #elem.Options then break end
-                                          
-                                          local optPos = Vector2.new(elem.Bg.Position.X, currentY) 
-                                          if isMouseOver(optPos, Vector2.new(elem.Bg.Size.X, 24)) then
-                                              local val = elem.Options[realIdx]
-                                              if elem.Multi then
-                                                  if elem.Selected[val] then
-                                                      elem.Selected[val] = nil
-                                                  else
-                                                      elem.Selected[val] = true
-                                                  end
-                                                  task.spawn(function() elem.Callback(elem.Selected) end)
-                                              else
-                                                  elem.Selected = val
-                                                  elem.Open = false
-                                                  task.spawn(function() elem.Callback(elem.Selected) end)
-                                              end
-                                              clickedOption = true
-                                              break
-                                          end
-                                          currentY = currentY + 26
-                                      end
-                                  end
-                                  
-                                  if not clickedOption and (elem.ScrollIndex + elem.MaxVisible <= #elem.Options) then
-                                      if isMouseOver(Vector2.new(elem.Bg.Position.X, currentY), Vector2.new(elem.Bg.Size.X, 20)) then
-                                          elem.ScrollIndex = math.min(#elem.Options - elem.MaxVisible + 1, elem.ScrollIndex + 1)
-                                          clickedOption = true
-                                      end
-                                  end
-                             end
+                     if window.ActiveTab then
+                         for _, elem in ipairs(window.ActiveTab.Elements) do
+                             if blockingDropdown and elem ~= blockingDropdown then continue end
                              
-                             if not clickedOption and isMouseOver(elem.Bg.Position, Vector2.new(elem.Bg.Size.X, 36)) then
-                                  elem.Open = not elem.Open
+                             if elem.Type == "Button" then
+                                 if isMouseOver(elem.Border.Position, elem.Border.Size) then
+                                     task.spawn(elem.Callback)
+                                     elem.Bg.Color = Color3.fromRGB(60, 60, 60)
+                                     task.delay(0.1, function() elem.Bg.Color = colors.ElementBg end)
+                                 end
+                             elseif elem.Type == "Toggle" then
+                                 local clickAreaPos = elem.Txt.Position - Vector2.new(30, 5)
+                                 local clickAreaSize = Vector2.new(200, 25)
+                                 if isMouseOver(clickAreaPos, clickAreaSize) then
+                                     elem.State = not elem.State
+                                     elem.Inner.Visible = elem.State
+                                     task.spawn(function() elem.Callback(elem.State) end)
+                                 end
+                             elseif elem.Type == "Slider" then
+                                 if isMouseOver(elem.Bg.Position - Vector2.new(0, 10), elem.Bg.Size + Vector2.new(0, 20)) then
+                                     sliderDragging = elem
+                                 end
+                             elseif elem.Type == "Dropdown" then
+                                 local clickedOption = false
+                                 if elem.Open then
+                                      local currentY = elem.Bg.Position.Y + 40
+                                      
+                                      if elem.ScrollIndex > 1 then
+                                          if isMouseOver(Vector2.new(elem.Bg.Position.X, currentY), Vector2.new(elem.Bg.Size.X, 20)) then
+                                              elem.ScrollIndex = math.max(1, elem.ScrollIndex - 1)
+                                              clickedOption = true
+                                          end
+                                          currentY = currentY + 20
+                                      end
+                                      
+                                      if not clickedOption then
+                                          for i = 0, elem.MaxVisible - 1 do
+                                              local realIdx = elem.ScrollIndex + i
+                                              if realIdx > #elem.Options then break end
+                                              
+                                              local optPos = Vector2.new(elem.Bg.Position.X, currentY) 
+                                              if isMouseOver(optPos, Vector2.new(elem.Bg.Size.X, 24)) then
+                                                  local val = elem.Options[realIdx]
+                                                  if elem.Multi then
+                                                      if elem.Selected[val] then
+                                                          elem.Selected[val] = nil
+                                                      else
+                                                          elem.Selected[val] = true
+                                                      end
+                                                      task.spawn(function() elem.Callback(elem.Selected) end)
+                                                  else
+                                                      elem.Selected = val
+                                                      elem.Open = false
+                                                      task.spawn(function() elem.Callback(elem.Selected) end)
+                                                  end
+                                                  clickedOption = true
+                                                  break
+                                              end
+                                              currentY = currentY + 26
+                                          end
+                                      end
+                                      
+                                      if not clickedOption and (elem.ScrollIndex + elem.MaxVisible <= #elem.Options) then
+                                          if isMouseOver(Vector2.new(elem.Bg.Position.X, currentY), Vector2.new(elem.Bg.Size.X, 20)) then
+                                              elem.ScrollIndex = math.min(#elem.Options - elem.MaxVisible + 1, elem.ScrollIndex + 1)
+                                              clickedOption = true
+                                          end
+                                      end
+                                 end
+                                 
+                                 if not clickedOption and isMouseOver(elem.Bg.Position, Vector2.new(elem.Bg.Size.X, 36)) then
+                                      elem.Open = not elem.Open
+                                 end
                              end
                          end
                      end
-                 end
+                end
             end
             
             if isPressed and sliderDragging then
