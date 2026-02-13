@@ -120,7 +120,10 @@ function Library:CreateWindow(title, initialSize)
         topBarShapes.Bottom.Size = Vector2.new(w, th - r)
         titleText.Position = mainPos + Vector2.new(15, 12)
 
-        window.TitleWidth = titleText.TextBounds.X
+        if (window.TitleUpdates or 0) < 10 or window.TitleWidth == 0 then
+            window.TitleWidth = titleText.TextBounds.X
+            window.TitleUpdates = (window.TitleUpdates or 0) + 1
+        end
         local sepX = 15 + window.TitleWidth + 10
         local sepY = mainPos.Y + 10
         local sepH = 20
@@ -745,7 +748,7 @@ function Library:ShowDemo()
     
     Tab1:CreateSection("Features")
     
-    Tab1:CreateButton("fat", function()
+    Tab1:CreateButton("Print", function()
         print("Hello from Matcha!")
     end)
     
