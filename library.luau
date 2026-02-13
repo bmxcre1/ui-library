@@ -3,6 +3,9 @@ local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
 local Library = {}
+if getgenv then
+    getgenv().Library = Library
+end
 
 function Library:CreateWindow(title, initialSize)
 	local window = {}
