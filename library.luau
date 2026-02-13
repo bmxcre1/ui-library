@@ -4,6 +4,16 @@ local Mouse = LocalPlayer:GetMouse()
 
 Library = {}
 
+local _inputs = {['m1']={id=0x01,held=false,click=false},['m2']={id=0x02,held=false,click=false},['mb']={id=0x04,held=false,click=false},['unbound']={id=0x08,held=false,click=false},['tab']={id=0x09,held=false,click=false},['enter']={id=0x0D,held=false,click=false},['shift']={id=0x10,held=false,click=false},['ctrl']={id=0x11,held=false,click=false},['alt']={id=0x12,held=false,click=false},['pause']={id=0x13,held=false,click=false},['capslock']={id=0x14,held=false,click=false},['esc']={id=0x1B,held=false,click=false},['space']={id=0x20,held=false,click=false},['pageup']={id=0x21,held=false,click=false},['pagedown']={id=0x22,held=false,click=false},['end']={id=0x23,held=false,click=false},['home']={id=0x24,held=false,click=false},['left']={id=0x25,held=false,click=false},['up']={id=0x26,held=false,click=false},['right']={id=0x27,held=false,click=false},['down']={id=0x28,held=false,click=false},['insert']={id=0x2D,held=false,click=false},['delete']={id=0x2E,held=false,click=false},['0']={id=0x30,held=false,click=false},['1']={id=0x31,held=false,click=false},['2']={id=0x32,held=false,click=false},['3']={id=0x33,held=false,click=false},['4']={id=0x34,held=false,click=false},['5']={id=0x35,held=false,click=false},['6']={id=0x36,held=false,click=false},['7']={id=0x37,held=false,click=false},['8']={id=0x38,held=false,click=false},['9']={id=0x39,held=false,click=false},['a']={id=0x41,held=false,click=false},['b']={id=0x42,held=false,click=false},['c']={id=0x43,held=false,click=false},['d']={id=0x44,held=false,click=false},['e']={id=0x45,held=false,click=false},['f']={id=0x46,held=false,click=false},['g']={id=0x47,held=false,click=false},['h']={id=0x48,held=false,click=false},['i']={id=0x49,held=false,click=false},['j']={id=0x4A,held=false,click=false},['k']={id=0x4B,held=false,click=false},['l']={id=0x4C,held=false,click=false},['m']={id=0x4D,held=false,click=false},['n']={id=0x4E,held=false,click=false},['o']={id=0x4F,held=false,click=false},['p']={id=0x50,held=false,click=false},['q']={id=0x51,held=false,click=false},['r']={id=0x52,held=false,click=false},['s']={id=0x53,held=false,click=false},['t']={id=0x54,held=false,click=false},['u']={id=0x55,held=false,click=false},['v']={id=0x56,held=false,click=false},['w']={id=0x57,held=false,click=false},['x']={id=0x58,held=false,click=false},['y']={id=0x59,held=false,click=false},['z']={id=0x5A,held=false,click=false},['numpad0']={id=0x60,held=false,click=false},['numpad1']={id=0x61,held=false,click=false},['numpad2']={id=0x62,held=false,click=false},['numpad3']={id=0x63,held=false,click=false},['numpad4']={id=0x64,held=false,click=false},['numpad5']={id=0x65,held=false,click=false},['numpad6']={id=0x66,held=false,click=false},['numpad7']={id=0x67,held=false,click=false},['numpad8']={id=0x68,held=false,click=false},['numpad9']={id=0x69,held=false,click=false},['multiply']={id=0x6A,held=false,click=false},['add']={id=0x6B,held=false,click=false},['separator']={id=0x6C,held=false,click=false},['subtract']={id=0x6D,held=false,click=false},['decimal']={id=0x6E,held=false,click=false},['divide']={id=0x6F,held=false,click=false},['f1']={id=0x70,held=false,click=false},['f2']={id=0x71,held=false,click=false},['f3']={id=0x72,held=false,click=false},['f4']={id=0x73,held=false,click=false},['f5']={id=0x74,held=false,click=false},['f6']={id=0x75,held=false,click=false},['f7']={id=0x76,held=false,click=false},['f8']={id=0x77,held=false,click=false},['f9']={id=0x78,held=false,click=false},['f10']={id=0x79,held=false,click=false},['f11']={id=0x7A,held=false,click=false},['f12']={id=0x7B,held=false,click=false},['numlock']={id=0x90,held=false,click=false},['scrolllock']={id=0x91,held=false,click=false},['lshift']={id=0xA0,held=false,click=false},['rshift']={id=0xA1,held=false,click=false},['lctrl']={id=0xA2,held=false,click=false},['rctrl']={id=0xA3,held=false,click=false},['lalt']={id=0xA4,held=false,click=false},['ralt']={id=0xA5,held=false,click=false},['semicolon']={id=0xBA,held=false,click=false},['plus']={id=0xBB,held=false,click=false},['comma']={id=0xBC,held=false,click=false},['minus']={id=0xBD,held=false,click=false},['period']={id=0xBE,held=false,click=false},['slash']={id=0xBF,held=false,click=false},['tilde']={id=0xC0,held=false,click=false},['lbracket']={id=0xDB,held=false,click=false},['backslash']={id=0xDC,held=false,click=false},['rbracket']={id=0xDD,held=false,click=false},['quote']={id=0xDE,held=false,click=false}}
+
+local function UpdateInput()
+    for _, v in pairs(_inputs) do
+        local down = iskeydown(v.id)
+        v.click = down and not v.held
+        v.held = down
+    end
+end
+
 function Library:CreateWindow(title, initialSize)
 	local window = {}
 	window.Tabs = {}
@@ -11,8 +21,10 @@ function Library:CreateWindow(title, initialSize)
 	window.Dragging = false
 	window.DragStart = Vector2.new(0, 0)
 	window.StartPos = Vector2.new(0, 0)
-    window.Opened = true
-    window.TitleWidth = 0
+	window.Opened = true
+    window.Keybinds = {}
+        window.Whitelisted = {}
+        window.TitleWidth = 0
 	local mainSize = initialSize or Vector2.new(550, 400)
 	local mainPos = Vector2.new(100, 100)
     local cornerRadius = 6
@@ -582,6 +594,62 @@ function Library:CreateWindow(title, initialSize)
              return drop
         end
 
+        function tab:CreateKeybind(text, defaultKey, callback)
+            local kb = { 
+                Type = "Keybind", 
+                Height = 32, 
+                Callback = callback, 
+                Key = defaultKey or "unbound",
+                IsBinding = false
+            }
+            
+            local btnBorder = Drawing.new("Square")
+            btnBorder.Size = Vector2.new(mainSize.X - 40, 28)
+            btnBorder.Filled = true
+            btnBorder.Color = colors.Border
+            btnBorder.Visible = false
+            kb.Border = btnBorder
+            
+            local btnBg = Drawing.new("Square")
+            btnBg.Size = Vector2.new(mainSize.X - 42, 26)
+            btnBg.Filled = true
+            btnBg.Color = colors.ElementBg
+            btnBg.Visible = false
+            kb.Bg = btnBg
+            
+            local btnTxt = Drawing.new("Text")
+            btnTxt.Text = text .. ": " .. kb.Key:upper()
+            btnTxt.Size = 13
+            btnTxt.Color = colors.Text
+            btnTxt.Font = Drawing.Fonts.System
+            btnTxt.Visible = false
+            btnTxt.Center = true
+            kb.Txt = btnTxt
+            
+            function kb:Update(pos)
+                btnBorder.Position = pos
+                btnBg.Position = pos + Vector2.new(1, 1)
+                
+                if kb.IsBinding then
+                    btnTxt.Text = text .. ": ..."
+                else
+                    btnTxt.Text = text .. ": " .. kb.Key:upper()
+                end
+                
+                btnTxt.Position = pos + Vector2.new((mainSize.X - 40)/2, 13)
+            end
+            
+            function kb:SetVisible(vis)
+                btnBorder.Visible = vis
+                btnBg.Visible = vis
+                btnTxt.Visible = vis
+            end
+            
+            table.insert(tab.Elements, kb)
+            table.insert(window.Keybinds, kb)
+            return kb
+        end
+
         table.insert(window.Tabs, tab)
         if #window.Tabs == 1 then
              window.ActiveTab = tab
@@ -594,6 +662,26 @@ function Library:CreateWindow(title, initialSize)
         local sliderDragging = nil 
         while true do
             task.wait()
+            UpdateInput()
+
+            local anyBinding = false
+            for _, kb in ipairs(window.Keybinds) do
+                if kb.IsBinding then
+                    anyBinding = true
+                    for keyName, data in pairs(_inputs) do
+                        if data.click and keyName ~= "unbound" then
+                            kb.Key = keyName
+                            kb.IsBinding = false
+                            if kb.Callback then task.spawn(function() kb.Callback(keyName) end) end
+                            break
+                        end
+                    end
+                elseif (not window.Opened or window.Opened) then
+                     if _inputs[kb.Key] and _inputs[kb.Key].click then
+                         if kb.Callback then task.spawn(function() kb.Callback(kb.Key) end) end
+                     end
+                end
+            end
             
             if not window.Opened then
                 for _, s in pairs(mainShapes) do s.Visible = false end
@@ -752,6 +840,12 @@ function Library:CreateWindow(title, initialSize)
                                  
                                  if not clickedOption and isMouseOver(elem.Bg.Position, Vector2.new(elem.Bg.Size.X, 36)) then
                                       elem.Open = not elem.Open
+                                 end
+                             elseif elem.Type == "Keybind" then
+                                 if isMouseOver(elem.Border.Position, elem.Border.Size) then
+                                     elem.IsBinding = true
+                                     elem.Bg.Color = Color3.fromRGB(60, 60, 60)
+                                     task.delay(0.1, function() elem.Bg.Color = colors.ElementBg end)
                                  end
                              end
                          end
