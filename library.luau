@@ -592,34 +592,41 @@ function Library:CreateWindow(title, initialSize)
 
     task.spawn(function()
         local sliderDragging = nil 
-        local lastToggle = false
+        local toggleDebounce = false
+
         while true do
             task.wait()
             
-            local toggle = iskeydown(0x5A)
-            if toggle and not lastToggle then
-                window.Opened = not window.Opened
+            if iskeypressed(0x5A) then
+                if not toggleDebounce then
+                    window.Opened = not window.Opened
+                    toggleDebounce = true
+                end
+            else
+                toggleDebounce = false
             end
-            lastToggle = toggle
             
             if not window.Opened then
                 for _, s in pairs(mainShapes) do s.Visible = false end
                 for _, s in pairs(topBarShapes) do s.Visible = false end
                 titleText.Visible = false
                 separator.Visible = false
+                
                 for _, tab in ipairs(window.Tabs) do
                     tab.Btn.Visible = false
-                    for _, elem in ipairs(tab.Elements) do elem:SetVisible(false) end
+                    for _, elem in ipairs(tab.Elements) do
+                        elem:SetVisible(false)
+                    end
                 end
-                sliderDragging = nil
+                
                 continue
             end
-
+            
             for _, s in pairs(mainShapes) do s.Visible = true end
             for _, s in pairs(topBarShapes) do s.Visible = true end
             titleText.Visible = true
             separator.Visible = true
-            
+
             for _, tab in ipairs(window.Tabs) do
                 local isTabActive = (window.ActiveTab == tab)
                 
