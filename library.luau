@@ -147,6 +147,23 @@ function Library:CreateWindow(title, initialSize)
         end
     end
 
+    local function updateRoundedBox(shapes, pos, size, radius)
+        local x, y = pos.X, pos.Y
+        local w, h = size.X, size.Y
+        local r = radius
+
+        shapes.TL.Position = Vector2.new(x + r, y + r)
+        shapes.TR.Position = Vector2.new(x + w - r, y + r)
+        shapes.BL.Position = Vector2.new(x + r, y + h - r)
+        shapes.BR.Position = Vector2.new(x + w - r, y + h - r)
+        
+        shapes.R1.Position = Vector2.new(x + r, y)
+        shapes.R1.Size = Vector2.new(w - 2 * r, h)
+        
+        shapes.R2.Position = Vector2.new(x, y + r)
+        shapes.R2.Size = Vector2.new(w, h - 2 * r)
+    end
+
     function window:CreateTab(name)
         local tab = {
             Name = name,
@@ -199,19 +216,19 @@ function Library:CreateWindow(title, initialSize)
         
         function tab:CreateButton(text, callback)
             local btn = { Type = "Button", Height = 32, Callback = callback }
-            local btnBorder = Drawing.new("Square")
-            btnBorder.Size = Vector2.new(mainSize.X - 40, 28)
-            btnBorder.Filled = true
-            btnBorder.Color = colors.Border
-            btnBorder.Visible = false
-            btn.Border = btnBorder
+            local btnRadius = 5
+
+            local btnBorderShapes = createRoundedBox(btnRadius, true)
+            setShapesColor(btnBorderShapes, colors.Border)
+            for _, s in pairs(btnBorderShapes) do s.Visible = false end
+            btn.BorderShapes = btnBorderShapes
+
+            btn.Border = { Position = Vector2.new(0, 0), Size = Vector2.new(0, 0) }
             
-            local btnBg = Drawing.new("Square")
-            btnBg.Size = Vector2.new(mainSize.X - 42, 26)
-            btnBg.Filled = true
-            btnBg.Color = colors.ElementBg
-            btnBg.Visible = false
-            btn.Bg = btnBg
+            local btnBgShapes = createRoundedBox(btnRadius, true)
+            setShapesColor(btnBgShapes, colors.ElementBg)
+            for _, s in pairs(btnBgShapes) do s.Visible = false end
+            btn.BgShapes = btnBgShapes
             
             local btnTxt = Drawing.new("Text")
             btnTxt.Text = text
@@ -223,24 +240,30 @@ function Library:CreateWindow(title, initialSize)
             btn.Txt = btnTxt
             
             function btn:Update(pos)
-                btnBorder.Position = pos
-                btnBg.Position = pos + Vector2.new(1, 1)
+                local bSize = Vector2.new(mainSize.X - 40, 28)
+                btn.Border.Position = pos
+                btn.Border.Size = bSize
+                updateRoundedBox(btn.BorderShapes, pos, bSize, btnRadius)
+                
+                local bgSize = Vector2.new(mainSize.X - 42, 26)
+                updateRoundedBox(btn.BgShapes, pos + Vector2.new(1, 1), bgSize, btnRadius)
+                
                 btnTxt.Position = pos + Vector2.new((mainSize.X - 40)/2, 13)
             end
             
             function btn:SetVisible(vis)
-                btnBorder.Visible = vis
-                btnBg.Visible = vis
+                for _, s in pairs(btn.BorderShapes) do s.Visible = vis end
+                for _, s in pairs(btn.BgShapes) do s.Visible = vis end
                 btnTxt.Visible = vis
             end
             
             table.insert(tab.Elements, btn)
             return btn
         end
-        
+
         function tab:CreateToggle(text, callback)
              local tog = { Type = "Toggle", Height = 25, Callback = callback, State = false }
-             
+
              local togOuter = Drawing.new("Circle")
              togOuter.Radius = 9
              togOuter.Filled = true
@@ -248,7 +271,7 @@ function Library:CreateWindow(title, initialSize)
              togOuter.NumSides = 20
              togOuter.Visible = false
              tog.Outer = togOuter
-             
+
              local togHole = Drawing.new("Circle")
              togHole.Radius = 7
              togHole.Filled = true
@@ -256,7 +279,7 @@ function Library:CreateWindow(title, initialSize)
              togHole.NumSides = 20
              togHole.Visible = false
              tog.Hole = togHole
-             
+
              local togInner = Drawing.new("Circle")
              togInner.Radius = 4
              togInner.Filled = true
@@ -264,7 +287,7 @@ function Library:CreateWindow(title, initialSize)
              togInner.NumSides = 20
              togInner.Visible = false
              tog.Inner = togInner
-             
+
              local togTxt = Drawing.new("Text")
              togTxt.Text = text
              togTxt.Size = 14
@@ -272,26 +295,26 @@ function Library:CreateWindow(title, initialSize)
              togTxt.Font = Drawing.Fonts.System
              togTxt.Visible = false
              tog.Txt = togTxt
-             
+
              function tog:Update(pos)
                 local circleCenter = pos + Vector2.new(10, 12)
-                
+
                 togOuter.Position = circleCenter
                 togHole.Position = circleCenter
                 togInner.Position = circleCenter
-                
+
                 togTxt.Position = pos + Vector2.new(28, 4)
-                
+
                 togInner.Visible = (tog.State and window.ActiveTab == tab)
              end
-             
+
              function tog:SetVisible(vis)
                 togOuter.Visible = vis
                 togHole.Visible = vis
                 togTxt.Visible = vis
                 if vis and tog.State then togInner.Visible = true else togInner.Visible = false end
              end
-             
+
              table.insert(tab.Elements, tog)
              return tog
         end
@@ -375,12 +398,16 @@ function Library:CreateWindow(title, initialSize)
                  MaxVisible = 6
              }
              
-             local dBg = Drawing.new("Square")
-             dBg.Size = Vector2.new(mainSize.X - 40, 36)
-             dBg.Filled = true
-             dBg.Color = colors.ElementBg
-             dBg.Visible = false
-             drop.Bg = dBg
+             local dropRadius = 5
+             local dBgShapes = createRoundedBox(dropRadius, true)
+             setShapesColor(dBgShapes, colors.ElementBg)
+             for _, s in pairs(dBgShapes) do s.Visible = false end
+             drop.BgShapes = dBgShapes
+             
+             drop.Bg = { 
+                 Position = Vector2.new(0, 0), 
+                 Size = Vector2.new(mainSize.X - 40, 36) 
+             }
              
              local dTxt = Drawing.new("Text")
              dTxt.Text = text .. ": " .. (drop.Multi and "None" or drop.Selected)
@@ -420,7 +447,10 @@ function Library:CreateWindow(title, initialSize)
              drop.OptionDrawings = {}
              
              function drop:Update(pos)
-                dBg.Position = pos
+                drop.Bg.Position = pos
+                drop.Bg.Size = Vector2.new(mainSize.X - 40, 36)
+                updateRoundedBox(drop.BgShapes, pos, drop.Bg.Size, dropRadius)
+
                 dTxt.Position = pos + Vector2.new(10, 11)
                 
                 local displayStr = ""
@@ -441,7 +471,7 @@ function Library:CreateWindow(title, initialSize)
                 end
                 dTxt.Text = text .. ": " .. displayStr
                 
-                local arrowCenter = pos + Vector2.new(dBg.Size.X - 20, 18)
+                local arrowCenter = pos + Vector2.new(drop.Bg.Size.X - 20, 18)
                 if drop.Open then
                     dArrow.PointA = arrowCenter + Vector2.new(-5, 3)
                     dArrow.PointB = arrowCenter + Vector2.new(5, 3)
@@ -454,7 +484,7 @@ function Library:CreateWindow(title, initialSize)
                 
                 if drop.Open then
                      local currentOptY = pos.Y + 40
-                     local centerX = pos.X + dBg.Size.X / 2
+                     local centerX = pos.X + drop.Bg.Size.X / 2
                      
                      if drop.ScrollIndex > 1 then
                          local arrowY = currentOptY + 10
@@ -496,10 +526,10 @@ function Library:CreateWindow(title, initialSize)
                          local d = drop.OptionDrawings[drawIdx]
                          d.Bg.Visible = true
                          d.Bg.Position = Vector2.new(pos.X, currentOptY)
-                         d.Bg.Size = Vector2.new(dBg.Size.X, 24)
+                         d.Bg.Size = Vector2.new(drop.Bg.Size.X, 24)
                          
                          d.Txt.Visible = true
-                         d.Txt.Position = Vector2.new(pos.X + dBg.Size.X/2, currentOptY + 12)
+                         d.Txt.Position = Vector2.new(pos.X + drop.Bg.Size.X/2, currentOptY + 12)
                          d.Txt.Text = drop.Options[realIdx]
                          
                          local isSelected = false
@@ -536,7 +566,7 @@ function Library:CreateWindow(title, initialSize)
                      
                      drop.ListBg.Visible = true
                      drop.ListBg.Position = Vector2.new(pos.X, pos.Y + 40)
-                     drop.ListBg.Size = Vector2.new(dBg.Size.X, currentOptY - (pos.Y + 40))
+                     drop.ListBg.Size = Vector2.new(drop.Bg.Size.X, currentOptY - (pos.Y + 40))
 
                      drop.Height = 40
                 else
@@ -552,7 +582,7 @@ function Library:CreateWindow(title, initialSize)
              end
              
              function drop:SetVisible(vis)
-                 dBg.Visible = vis
+                 for _, s in pairs(drop.BgShapes) do s.Visible = vis end
                  dTxt.Visible = vis
                  dArrow.Visible = vis
                  
@@ -701,8 +731,8 @@ function Library:CreateWindow(title, initialSize)
                              if elem.Type == "Button" then
                                  if isMouseOver(elem.Border.Position, elem.Border.Size) then
                                      task.spawn(elem.Callback)
-                                     elem.Bg.Color = Color3.fromRGB(60, 60, 60)
-                                     task.delay(0.1, function() elem.Bg.Color = colors.ElementBg end)
+                                     setShapesColor(elem.BgShapes, Color3.fromRGB(60, 60, 60))
+                                     task.delay(0.1, function() setShapesColor(elem.BgShapes, colors.ElementBg) end)
                                  end
                              elseif elem.Type == "Toggle" then
                                  local clickAreaPos = elem.Txt.Position - Vector2.new(30, 5)
