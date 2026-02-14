@@ -215,7 +215,7 @@ function Library:CreateWindow(title, initialSize)
         end
         
         function tab:CreateButton(text, callback)
-            local btn = { Type = "Button", Height = 32, Callback = callback }
+            local btn = { Type = "Button", Height = 32, Callback = callback, Clicked = false }
             local btnRadius = 5
 
             local btnBorderShapes = createRoundedBox(btnRadius, true)
@@ -240,6 +240,7 @@ function Library:CreateWindow(title, initialSize)
             btn.Txt = btnTxt
             
             function btn:Update(pos)
+                if btn.Clicked then return end
                 local bSize = Vector2.new(mainSize.X - 40, 28)
                 btn.Border.Position = pos
                 btn.Border.Size = bSize
@@ -252,6 +253,7 @@ function Library:CreateWindow(title, initialSize)
             end
             
             function btn:SetVisible(vis)
+                if btn.Clicked then vis = false end
                 for _, s in pairs(btn.BorderShapes) do s.Visible = vis end
                 for _, s in pairs(btn.BgShapes) do s.Visible = vis end
                 btnTxt.Visible = vis
@@ -730,9 +732,9 @@ function Library:CreateWindow(title, initialSize)
                              
                              if elem.Type == "Button" then
                                  if isMouseOver(elem.Border.Position, elem.Border.Size) then
+                                     elem.Clicked = true
+                                     elem:SetVisible(false)
                                      task.spawn(elem.Callback)
-                                     setShapesColor(elem.BgShapes, Color3.fromRGB(60, 60, 60))
-                                     task.delay(0.1, function() setShapesColor(elem.BgShapes, colors.ElementBg) end)
                                  end
                              elseif elem.Type == "Toggle" then
                                  local clickAreaPos = elem.Txt.Position - Vector2.new(30, 5)
@@ -840,8 +842,8 @@ function Library:CreateWindow(title, initialSize)
                      pcall(function() elem.Txt:Remove() end)
                      pcall(function() elem.Line:Remove() end)
                 elseif elem.Type == "Button" then
-                     pcall(function() elem.Border:Remove() end)
-                     pcall(function() elem.Bg:Remove() end)
+                     for _, s in pairs(elem.BorderShapes) do pcall(function() s:Remove() end) end
+                     for _, s in pairs(elem.BgShapes) do pcall(function() s:Remove() end) end
                      pcall(function() elem.Txt:Remove() end)
                 elseif elem.Type == "Toggle" then
                      pcall(function() elem.Outer:Remove() end)
