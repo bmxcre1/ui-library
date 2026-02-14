@@ -636,7 +636,7 @@ function Library:CreateWindow(title, initialSize)
             if window.Destroyed then break end
             task.wait()
 
-            if iskeypressed(0x5A) then
+            if iskeypressed(0x5A) and isrbxactive() then
                 if not toggleDebounce then
                     window.Opened = not window.Opened
                     toggleDebounce = true
@@ -680,7 +680,7 @@ function Library:CreateWindow(title, initialSize)
             local mousePos = Vector2.new(Mouse.X, Mouse.Y)
 
             if window.Dragging then
-                if isPressed then
+                if isPressed and isrbxactive()  then
                     local delta = mousePos - window.DragStart
                     mainPos = window.StartPos + delta
                 else
@@ -688,7 +688,7 @@ function Library:CreateWindow(title, initialSize)
                 end
             end
 
-            if isPressed and not wasMousePressed then
+            if isPressed and isrbxactive()  and not wasMousePressed then
                 local consumed = false
                 local blockingDropdown = nil
 
@@ -811,7 +811,7 @@ function Library:CreateWindow(title, initialSize)
                 end
             end
 
-            if isPressed and sliderDragging then
+            if isPressed and sliderDragging and isrbxactive() then
                 local elem = sliderDragging
                 local relX = mousePos.X - elem.Bg.Position.X
                 local pct = math.clamp(relX / elem.Bg.Size.X, 0, 1)
