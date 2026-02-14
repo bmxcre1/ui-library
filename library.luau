@@ -239,10 +239,6 @@ function Library:CreateWindow(title, initialSize)
             btnTxt.Center = true
             btn.Txt = btnTxt
 
-            function btn:SetText(newText)
-                btnTxt.Text = newText
-            end
-
             function btn:Update(pos)
                 local bSize = Vector2.new(mainSize.X - 40, 28)
                 btn.Border.Position = pos
@@ -263,6 +259,10 @@ function Library:CreateWindow(title, initialSize)
                 for _, s in pairs(btn.BorderShapes) do s.Visible = vis end
                 for _, s in pairs(btn.BgShapes) do s.Visible = vis end
                 btnTxt.Visible = vis
+            end
+
+            function btn:SetText(newText)
+                btnTxt.Text = newText
             end
 
             table.insert(tab.Elements, btn)
