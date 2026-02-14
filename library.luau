@@ -732,9 +732,9 @@ function Library:CreateWindow(title, initialSize)
                              
                              if elem.Type == "Button" then
                                  if isMouseOver(elem.Border.Position, elem.Border.Size) then
-                                     elem.Clicked = true
-                                     elem:SetVisible(false)
+                                     setShapesColor(elem.BgShapes, Color3.fromRGB(60, 60, 60))
                                      task.spawn(elem.Callback)
+                                     task.delay(0.1, function() setShapesColor(elem.BgShapes, colors.ElementBg) end)
                                  end
                              elseif elem.Type == "Toggle" then
                                  local clickAreaPos = elem.Txt.Position - Vector2.new(30, 5)
