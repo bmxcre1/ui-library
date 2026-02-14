@@ -25,7 +25,7 @@ function Library:CreateWindow(title, initialSize)
         Border = Color3.fromRGB(10, 10, 10)
     }
     
-    local function createRoundedBox(radius, filled, zIndex)
+    local function createRoundedBox(radius, filled)
         local shapes = {}
         shapes.TL = Drawing.new("Circle")
         shapes.TR = Drawing.new("Circle")
@@ -42,14 +42,13 @@ function Library:CreateWindow(title, initialSize)
             else
                 s.Filled = filled
             end
-            s.ZIndex = zIndex or 1
             s.Visible = true
         end
         
         return shapes
     end
     
-    local function createRoundedTop(radius, filled, zIndex)
+    local function createRoundedTop(radius, filled)
         local shapes = {}
         shapes.TL = Drawing.new("Circle")
         shapes.TR = Drawing.new("Circle")
@@ -64,14 +63,13 @@ function Library:CreateWindow(title, initialSize)
             else
                 s.Filled = filled
             end
-            s.ZIndex = zIndex or 1
             s.Visible = true
         end
         return shapes
     end
     
-    local mainShapes = createRoundedBox(cornerRadius, true, 1)
-    local topBarShapes = createRoundedTop(cornerRadius, true, 2)
+    local mainShapes = createRoundedBox(cornerRadius, true)
+    local topBarShapes = createRoundedTop(cornerRadius, true)
     local function setShapesColor(shapes, color)
         for _, s in pairs(shapes) do s.Color = color end
     end
@@ -85,14 +83,12 @@ function Library:CreateWindow(title, initialSize)
 	titleText.Visible = true
 	titleText.Font = Drawing.Fonts.System
     titleText.Center = false
-    titleText.ZIndex = 3
 
     local separator = Drawing.new("Line")
     separator.Thickness = 1
     separator.Color = Color3.new(1, 1, 1)
     separator.Transparency = 0.5 
     separator.Visible = true
-    separator.ZIndex = 3
     local wasMousePressed = false
 
 	local function isMouseOver(pos, size)
@@ -206,9 +202,7 @@ function Library:CreateWindow(title, initialSize)
             
             function sec:Update(pos)
                 secTxt.Position = pos + Vector2.new(2, 0)
-                secTxt.ZIndex = 3
                 secLine.Position = pos + Vector2.new(0, 18)
-                secLine.ZIndex = 3
             end
             
             function sec:SetVisible(vis)
@@ -224,14 +218,14 @@ function Library:CreateWindow(title, initialSize)
             local btn = { Type = "Button", Height = 32, Callback = callback, ClickTime = 0 }
             local btnRadius = 5
 
-            local btnBorderShapes = createRoundedBox(btnRadius, true, 3)
+            local btnBorderShapes = createRoundedBox(btnRadius, true)
             setShapesColor(btnBorderShapes, colors.Border)
             for _, s in pairs(btnBorderShapes) do s.Visible = false end
             btn.BorderShapes = btnBorderShapes
 
             btn.Border = { Position = Vector2.new(0, 0), Size = Vector2.new(0, 0) }
             
-            local btnBgShapes = createRoundedBox(btnRadius, true, 3)
+            local btnBgShapes = createRoundedBox(btnRadius, true)
             setShapesColor(btnBgShapes, colors.ElementBg)
             for _, s in pairs(btnBgShapes) do s.Visible = false end
             btn.BgShapes = btnBgShapes
@@ -243,7 +237,6 @@ function Library:CreateWindow(title, initialSize)
             btnTxt.Font = Drawing.Fonts.System
             btnTxt.Visible = false
             btnTxt.Center = true
-            btnTxt.ZIndex = 4
             btn.Txt = btnTxt
             
             function btn:Update(pos)
@@ -281,7 +274,6 @@ function Library:CreateWindow(title, initialSize)
              togOuter.Color = colors.Accent
              togOuter.NumSides = 20
              togOuter.Visible = false
-             togOuter.ZIndex = 3
              tog.Outer = togOuter
 
              local togHole = Drawing.new("Circle")
@@ -290,7 +282,6 @@ function Library:CreateWindow(title, initialSize)
              togHole.Color = colors.ElementBg
              togHole.NumSides = 20
              togHole.Visible = false
-             togHole.ZIndex = 4
              tog.Hole = togHole
 
              local togInner = Drawing.new("Circle")
@@ -299,7 +290,6 @@ function Library:CreateWindow(title, initialSize)
              togInner.Color = colors.Accent
              togInner.NumSides = 20
              togInner.Visible = false
-             togInner.ZIndex = 5
              tog.Inner = togInner
 
              local togTxt = Drawing.new("Text")
@@ -308,7 +298,6 @@ function Library:CreateWindow(title, initialSize)
              togTxt.Color = colors.Text
              togTxt.Font = Drawing.Fonts.System
              togTxt.Visible = false
-             togTxt.ZIndex = 4
              tog.Txt = togTxt
 
              function tog:Update(pos)
@@ -342,7 +331,6 @@ function Library:CreateWindow(title, initialSize)
              sBg.Filled = true
              sBg.Color = colors.ElementBg
              sBg.Visible = false
-             sBg.ZIndex = 3
              sld.Bg = sBg
              
              local sFill = Drawing.new("Square")
@@ -350,14 +338,12 @@ function Library:CreateWindow(title, initialSize)
              sFill.Filled = true
              sFill.Color = colors.Accent
              sFill.Visible = false
-             sFill.ZIndex = 4
              sld.Fill = sFill
              
              local sKnob = Drawing.new("Circle")
              sKnob.Radius = 6
              sKnob.Filled = true
              sKnob.Color = colors.Text
-             sKnob.ZIndex = 5
              sKnob.Visible = false
              sld.Knob = sKnob
              
@@ -367,7 +353,6 @@ function Library:CreateWindow(title, initialSize)
              sTxt.Color = colors.Text
              sTxt.Font = Drawing.Fonts.System
              sTxt.Visible = false
-             sTxt.ZIndex = 4
              sld.Txt = sTxt
              
              local sVal = Drawing.new("Text")
@@ -377,7 +362,6 @@ function Library:CreateWindow(title, initialSize)
              sVal.Font = Drawing.Fonts.System
              sVal.Visible = false
              sVal.Center = true
-             sVal.ZIndex = 4
              sld.Val = sVal
              
              function sld:Update(pos)
@@ -419,7 +403,7 @@ function Library:CreateWindow(title, initialSize)
              }
              
              local dropRadius = 5
-             local dBgShapes = createRoundedBox(dropRadius, true, 3)
+             local dBgShapes = createRoundedBox(dropRadius, true)
              setShapesColor(dBgShapes, colors.ElementBg)
              for _, s in pairs(dBgShapes) do s.Visible = false end
              drop.BgShapes = dBgShapes
@@ -435,35 +419,33 @@ function Library:CreateWindow(title, initialSize)
              dTxt.Color = colors.Text
              dTxt.Font = Drawing.Fonts.System
              dTxt.Visible = false
-             dTxt.ZIndex = 4
              drop.Txt = dTxt
              
              local dArrow = Drawing.new("Triangle")
              dArrow.Color = colors.Text
              dArrow.Filled = true
              dArrow.Visible = false
-             dArrow.ZIndex = 4
              drop.Arrow = dArrow
              
              local sUp = Drawing.new("Triangle")
              sUp.Color = colors.Text
              sUp.Filled = true
              sUp.Visible = false
-             sUp.ZIndex = 5
+             sUp.ZIndex = 3
              drop.ScrollUp = sUp
              
              local sDown = Drawing.new("Triangle")
              sDown.Color = colors.Text
              sDown.Filled = true
              sDown.Visible = false
-             sDown.ZIndex = 5
+             sDown.ZIndex = 3
              drop.ScrollDown = sDown
 
              local dListBg = Drawing.new("Square")
              dListBg.Filled = true
              dListBg.Color = Color3.fromRGB(28, 28, 28)
              dListBg.Visible = false
-             dListBg.ZIndex = 4
+             dListBg.ZIndex = 2
              drop.ListBg = dListBg
              
              drop.OptionDrawings = {}
@@ -646,18 +628,10 @@ function Library:CreateWindow(title, initialSize)
         local sliderDragging = nil 
         local toggleDebounce = false
 
-            local stabilizer = Drawing.new("Line")
-            stabilizer.Visible = true
-            stabilizer.Transparency = 0.01
-            stabilizer.ZIndex = 0
-
         while true do
-            if window.Destroyed then pcall(function() stabilizer:Remove() end) break end
+            if window.Destroyed then break end
             task.wait()
             
-            stabilizer.From = mainPos
-            stabilizer.To = mainPos + Vector2.new(1, 1)
-
             if iskeypressed(0x5A) then
                 if not toggleDebounce then
                     window.Opened = not window.Opened
