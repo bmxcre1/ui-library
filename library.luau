@@ -215,7 +215,7 @@ function Library:CreateWindow(title, initialSize)
         end
         
         function tab:CreateButton(text, callback)
-            local btn = { Type = "Button", Height = 32, Callback = callback, Clicked = false }
+            local btn = { Type = "Button", Height = 32, Callback = callback, ClickTime = 0 }
             local btnRadius = 5
 
             local btnBorderShapes = createRoundedBox(btnRadius, true)
@@ -240,7 +240,6 @@ function Library:CreateWindow(title, initialSize)
             btn.Txt = btnTxt
             
             function btn:Update(pos)
-                if btn.Clicked then return end
                 local bSize = Vector2.new(mainSize.X - 40, 28)
                 btn.Border.Position = pos
                 btn.Border.Size = bSize
@@ -250,10 +249,13 @@ function Library:CreateWindow(title, initialSize)
                 updateRoundedBox(btn.BgShapes, pos + Vector2.new(1, 1), bgSize, btnRadius)
                 
                 btnTxt.Position = pos + Vector2.new((mainSize.X - 40)/2, 13)
+                
+                if os.clock() - btn.ClickTime > 0.1 then
+                    setShapesColor(btn.BgShapes, colors.ElementBg)
+                end
             end
             
             function btn:SetVisible(vis)
-                if btn.Clicked then vis = false end
                 for _, s in pairs(btn.BorderShapes) do s.Visible = vis end
                 for _, s in pairs(btn.BgShapes) do s.Visible = vis end
                 btnTxt.Visible = vis
@@ -732,9 +734,9 @@ function Library:CreateWindow(title, initialSize)
                              
                              if elem.Type == "Button" then
                                  if isMouseOver(elem.Border.Position, elem.Border.Size) then
+                                     elem.ClickTime = os.clock()
                                      setShapesColor(elem.BgShapes, Color3.fromRGB(60, 60, 60))
                                      task.spawn(elem.Callback)
-                                     task.delay(0.1, function() setShapesColor(elem.BgShapes, colors.ElementBg) end)
                                  end
                              elseif elem.Type == "Toggle" then
                                  local clickAreaPos = elem.Txt.Position - Vector2.new(30, 5)
