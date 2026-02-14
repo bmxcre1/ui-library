@@ -42,8 +42,7 @@ function Library:CreateWindow(title, initialSize)
             else
                 s.Filled = filled
             end
-            s.Visible = false
-            s.Transparency = 1
+            s.Visible = true
         end
         
         return shapes
@@ -221,12 +220,14 @@ function Library:CreateWindow(title, initialSize)
 
             local btnBorderShapes = createRoundedBox(btnRadius, true)
             setShapesColor(btnBorderShapes, colors.Border)
+            for _, s in pairs(btnBorderShapes) do s.Visible = false end
             btn.BorderShapes = btnBorderShapes
 
             btn.Border = { Position = Vector2.new(0, 0), Size = Vector2.new(0, 0) }
             
             local btnBgShapes = createRoundedBox(btnRadius, true)
             setShapesColor(btnBgShapes, colors.ElementBg)
+            for _, s in pairs(btnBgShapes) do s.Visible = false end
             btn.BgShapes = btnBgShapes
             
             local btnTxt = Drawing.new("Text")
@@ -243,31 +244,19 @@ function Library:CreateWindow(title, initialSize)
                 local bSize = Vector2.new(mainSize.X - 40, 28)
                 btn.Border.Position = pos
                 btn.Border.Size = bSize
+                updateRoundedBox(btn.BorderShapes, pos, bSize, btnRadius)
                 
                 local bgSize = Vector2.new(mainSize.X - 42, 26)
-                local bgPos = pos + Vector2.new(1, 1)
-                
-                updateRoundedBox(btn.BorderShapes, pos, bSize, btnRadius)
-                updateRoundedBox(btn.BgShapes, bgPos, bgSize, btnRadius)
+                updateRoundedBox(btn.BgShapes, pos + Vector2.new(1, 1), bgSize, btnRadius)
                 
                 btnTxt.Position = pos + Vector2.new((mainSize.X - 40)/2, 13)
             end
             
             function btn:SetVisible(vis)
                 if btn.Clicked then vis = false end
-                for _, s in pairs(btn.BorderShapes) do 
-                    if s then 
-                        s.Visible = vis
-                        s.Transparency = vis and 1 or 0
-                    end
-                end
-                for _, s in pairs(btn.BgShapes) do 
-                    if s then 
-                        s.Visible = vis
-                        s.Transparency = vis and 1 or 0
-                    end
-                end
-                if btnTxt then btnTxt.Visible = vis end
+                for _, s in pairs(btn.BorderShapes) do s.Visible = vis end
+                for _, s in pairs(btn.BgShapes) do s.Visible = vis end
+                btnTxt.Visible = vis
             end
             
             table.insert(tab.Elements, btn)
