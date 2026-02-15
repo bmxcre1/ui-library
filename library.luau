@@ -343,6 +343,7 @@ function Library:CreateWindow(title, initialSize)
                 sTxt.Position = pos
                 sVal.Position = pos + Vector2.new(sBg.Size.X - 10, 0)
                 sBg.Position = pos + Vector2.new(0, 20)
+                sVal.Text = tostring(sld.Value)
                 sFill.Position = pos + Vector2.new(0, 20)
                 local pct = (sld.Value - sld.Min) / (sld.Max - sld.Min)
                 sFill.Size = Vector2.new(sBg.Size.X * pct, 4)
