@@ -123,6 +123,7 @@ function Library:CreateWindow(title, initialSize)
         local tabX = 15 + window.TitleWidth + 22
         for _, tab in ipairs(window.Tabs) do
             tab.Btn.Position = mainPos + Vector2.new(tabX, 12)
+            tab.Btn.ZIndex = 2
             tabX = tabX + tab.Width + 25
             if tab == window.ActiveTab then
                 tab.Btn.Color = colors.Accent
@@ -203,16 +204,16 @@ function Library:CreateWindow(title, initialSize)
             local btnRadius = 5
             local btnBorderShapes = createRoundedBox(btnRadius, true)
             setShapesColor(btnBorderShapes, colors.Border)
-            for _, s in pairs(btnBorderShapes) do 
-                s.Visible = false 
+            for _, s in pairs(btnBorderShapes) do
+                s.Visible = false
                 s.ZIndex = tab.ZIndex + 1
             end
             btn.BorderShapes = btnBorderShapes
             btn.Border = { Position = Vector2.new(0, 0), Size = Vector2.new(0, 0) }
             local btnBgShapes = createRoundedBox(btnRadius, true)
             setShapesColor(btnBgShapes, colors.ElementBg)
-            for _, s in pairs(btnBgShapes) do 
-                s.Visible = false 
+            for _, s in pairs(btnBgShapes) do
+                s.Visible = false
                 s.ZIndex = tab.ZIndex + 2
             end
             btn.BgShapes = btnBgShapes
@@ -373,8 +374,8 @@ function Library:CreateWindow(title, initialSize)
             local dropRadius = 5
             local dBgShapes = createRoundedBox(dropRadius, true)
             setShapesColor(dBgShapes, colors.ElementBg)
-            for _, s in pairs(dBgShapes) do 
-                s.Visible = false 
+            for _, s in pairs(dBgShapes) do
+                s.Visible = false
                 s.ZIndex = tab.ZIndex + 1
             end
             drop.BgShapes = dBgShapes
