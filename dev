@@ -464,7 +464,7 @@ function Library:CreateWindow(title, initialSize)
         window.Destroyed = true
         local function SafeRemove(obj)
             if obj and typeof(obj) == "table" then
-                for _, sub in pairs(obj) do pcall(function() if sub.Remove then sub:Remove() end end) end
+                for _, sub in pairs(obj) do pcall(function() if sub and sub.Remove then sub:Remove() end end) end
             else
                 pcall(function() if obj and obj.Remove then obj:Remove() end end)
             end
@@ -488,6 +488,42 @@ function Library:CreateWindow(title, initialSize)
     end
     updatePositions()
     return window
+end
+
+function Library:ShowDemo()
+    local Win = Library:CreateWindow("Demo", Vector2.new(500, 400))
+    local Tab1 = Win:CreateTab("Main")
+    local Tab2 = Win:CreateTab("Settings")
+
+    Tab1:CreateSection("Features")
+
+    Tab1:CreateButton("fat", function()
+        print("Hello from Matcha!")
+    end)
+
+    Tab1:CreateToggle("Enable Feature", function(state)
+        print("Feature Enabled:", state)
+    end)
+
+    Tab1:CreateSection("Configuration")
+
+    Tab1:CreateSlider("WalkSpeed", 16, 100, function(val)
+        print("Speed:", val)
+    end)
+
+    Tab1:CreateDropdown("Theme", {"Dark", "Light", "Midnight", "Ocean"}, function(val)
+        print("Theme selected:", val)
+    end)
+
+    Tab2:CreateSection("Preferences")
+
+    Tab2:CreateButton("Reset Config", function()
+        print("Config Reset")
+    end)
+
+    Tab2:CreateToggle("Dark Mode", function(state)
+        print("Dark Mode:", state)
+    end)
 end
 
 return Library
