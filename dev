@@ -43,7 +43,7 @@ function Library:CreateWindow(title, initialSize)
             else
                 s.Filled = filled
             end
-            s.Visible = true
+            s.Visible = false
         end
         return shapes
     end
@@ -62,7 +62,7 @@ function Library:CreateWindow(title, initialSize)
             else
                 s.Filled = filled
             end
-            s.Visible = true
+            s.Visible = false
         end
         return shapes
     end
@@ -116,9 +116,7 @@ function Library:CreateWindow(title, initialSize)
         local r = cornerRadius
         local x, y = mainPos.X, mainPos.Y
         local w, h = mainSize.X, mainSize.Y
-        
         updateRoundedBox(mainShapes, mainPos, mainSize, r)
-
         local th = 40
         topBarShapes.TL.Position = Vector2.new(x + r, y + r)
         topBarShapes.TR.Position = Vector2.new(x + w - r, y + r)
@@ -126,15 +124,12 @@ function Library:CreateWindow(title, initialSize)
         topBarShapes.Main.Size = Vector2.new(w - 2 * r, th)
         topBarShapes.Bottom.Position = Vector2.new(x, y + r)
         topBarShapes.Bottom.Size = Vector2.new(w, th - r)
-        
         titleText.Position = mainPos + Vector2.new(15, 12)
         window.TitleWidth = math.clamp(titleText.TextBounds.X, 100, 300)
-
         local sepX = 15 + window.TitleWidth + 10
         local sepY = mainPos.Y + 10
         separator.From = Vector2.new(mainPos.X + sepX, sepY)
-        separator.To   = Vector2.new(mainPos.X + sepX, sepY + 20)
-
+        separator.To = Vector2.new(mainPos.X + sepX, sepY + 20)
         local tabX = 15 + window.TitleWidth + 22
         for _, tab in ipairs(window.Tabs) do
             tab.Btn.Position = mainPos + Vector2.new(tabX, 12)
@@ -184,8 +179,7 @@ function Library:CreateWindow(title, initialSize)
                 secLine.Position = pos + Vector2.new(0, 18)
             end
             function sec:SetVisible(vis)
-                secTxt.Visible = vis
-                secLine.Visible = vis
+                secTxt.Visible, secLine.Visible = vis, vis
             end
             table.insert(tab.Elements, sec)
             return sec
@@ -194,21 +188,14 @@ function Library:CreateWindow(title, initialSize)
         function tab:CreateButton(text, callback)
             local btn = { Type = "Button", Height = 32, Callback = callback, ClickTime = 0 }
             local btnRadius = 5
-            local btnBorderShapes = createRoundedBox(btnRadius, true)
-            setShapesColor(btnBorderShapes, colors.Border)
-            local btnBgShapes = createRoundedBox(btnRadius, true)
-            setShapesColor(btnBgShapes, colors.ElementBg)
+            btn.BorderShapes = createRoundedBox(btnRadius, true)
+            setShapesColor(btn.BorderShapes, colors.Border)
+            btn.BgShapes = createRoundedBox(btnRadius, true)
+            setShapesColor(btn.BgShapes, colors.ElementBg)
             local btnTxt = Drawing.new("Text")
-            btnTxt.Text = text
-            btnTxt.Size = 13
-            btnTxt.Color = colors.Text
-            btnTxt.Font = Drawing.Fonts.System
-            btnTxt.Visible = false
-            btnTxt.Center = true
+            btnTxt.Text, btnTxt.Size, btnTxt.Color, btnTxt.Font, btnTxt.Visible, btnTxt.Center = text, 13, colors.Text, Drawing.Fonts.System, false, true
             btn.Txt = btnTxt
             btn.Border = { Position = Vector2.new(0,0), Size = Vector2.new(0,0) }
-            btn.BorderShapes = btnBorderShapes
-            btn.BgShapes = btnBgShapes
             function btn:Update(pos)
                 local bSize = Vector2.new(mainSize.X - 40, 28)
                 btn.Border.Position = pos
@@ -216,9 +203,7 @@ function Library:CreateWindow(title, initialSize)
                 updateRoundedBox(btn.BorderShapes, pos, bSize, btnRadius)
                 updateRoundedBox(btn.BgShapes, pos + Vector2.new(1, 1), Vector2.new(mainSize.X - 42, 26), btnRadius)
                 btnTxt.Position = pos + Vector2.new((mainSize.X - 40)/2, 13)
-                if os.clock() - btn.ClickTime > 0.1 then
-                    setShapesColor(btn.BgShapes, colors.ElementBg)
-                end
+                if os.clock() - btn.ClickTime > 0.1 then setShapesColor(btn.BgShapes, colors.ElementBg) end
             end
             function btn:SetVisible(vis)
                 for _, s in pairs(btn.BorderShapes) do s.Visible = vis end
@@ -233,42 +218,25 @@ function Library:CreateWindow(title, initialSize)
         function tab:CreateToggle(text, callback)
             local tog = { Type = "Toggle", Height = 25, Callback = callback, State = false }
             local togOuter = Drawing.new("Circle")
-            togOuter.Radius = 9
-            togOuter.Filled = true
-            togOuter.Color = colors.Accent
-            togOuter.NumSides = 20
+            togOuter.Radius, togOuter.Filled, togOuter.Color, togOuter.NumSides, togOuter.Visible = 9, true, colors.Accent, 20, false
             tog.Outer = togOuter
             local togHole = Drawing.new("Circle")
-            togHole.Radius = 7
-            togHole.Filled = true
-            togHole.Color = colors.ElementBg
-            togHole.NumSides = 20
+            togHole.Radius, togHole.Filled, togHole.Color, togHole.NumSides, togHole.Visible = 7, true, colors.ElementBg, 20, false
             tog.Hole = togHole
             local togInner = Drawing.new("Circle")
-            togInner.Radius = 4
-            togInner.Filled = true
-            togInner.Color = colors.Accent
-            togInner.NumSides = 20
-            togInner.Visible = false
+            togInner.Radius, togInner.Filled, togInner.Color, togInner.NumSides, togInner.Visible = 4, true, colors.Accent, 20, false
             tog.Inner = togInner
             local togTxt = Drawing.new("Text")
-            togTxt.Text = text
-            togTxt.Size = 14
-            togTxt.Color = colors.Text
-            togTxt.Font = Drawing.Fonts.System
+            togTxt.Text, togTxt.Size, togTxt.Color, togTxt.Font, togTxt.Visible = text, 14, colors.Text, Drawing.Fonts.System, false
             tog.Txt = togTxt
             function tog:Update(pos)
                 local circleCenter = pos + Vector2.new(10, 12)
-                togOuter.Position = circleCenter
-                togHole.Position = circleCenter
-                togInner.Position = circleCenter
+                togOuter.Position, togHole.Position, togInner.Position = circleCenter, circleCenter, circleCenter
                 togTxt.Position = pos + Vector2.new(28, 4)
                 togInner.Visible = (tog.State and window.Opened and window.ActiveTab == tab)
             end
             function tog:SetVisible(vis)
-                togOuter.Visible = vis
-                togHole.Visible = vis
-                togTxt.Visible = vis
+                togOuter.Visible, togHole.Visible, togTxt.Visible = vis, vis, vis
                 togInner.Visible = (vis and tog.State)
             end
             table.insert(tab.Elements, tog)
@@ -278,37 +246,24 @@ function Library:CreateWindow(title, initialSize)
         function tab:CreateSlider(text, min, max, callback)
             local sld = { Type = "Slider", Height = 40, Callback = callback, Min = min, Max = max, Value = min }
             local sBg = Drawing.new("Square")
-            sBg.Size = Vector2.new(mainSize.X - 40, 4)
-            sBg.Filled = true
-            sBg.Color = colors.ElementBg
+            sBg.Size, sBg.Filled, sBg.Color, sBg.Visible = Vector2.new(mainSize.X - 40, 4), true, colors.ElementBg, false
             sld.Bg = sBg
             local sFill = Drawing.new("Square")
-            sFill.Filled = true
-            sFill.Color = colors.Accent
+            sFill.Filled, sFill.Color, sFill.Visible = true, colors.Accent, false
             sld.Fill = sFill
             local sKnob = Drawing.new("Circle")
-            sKnob.Radius = 6
-            sKnob.Filled = true
-            sKnob.Color = colors.Text
+            sKnob.Radius, sKnob.Filled, sKnob.Color, sKnob.Visible = 6, true, colors.Text, false
             sld.Knob = sKnob
             local sTxt = Drawing.new("Text")
-            sTxt.Text = text
-            sTxt.Size = 14
-            sTxt.Color = colors.Text
-            sTxt.Font = Drawing.Fonts.System
+            sTxt.Text, sTxt.Size, sTxt.Color, sTxt.Font, sTxt.Visible = text, 14, colors.Text, Drawing.Fonts.System, false
             sld.Txt = sTxt
             local sVal = Drawing.new("Text")
-            sVal.Text = tostring(min)
-            sVal.Size = 14
-            sVal.Color = colors.Text
-            sVal.Font = Drawing.Fonts.System
-            sVal.Center = true
+            sVal.Text, sVal.Size, sVal.Color, sVal.Font, sVal.Visible, sVal.Center = tostring(min), 14, colors.Text, Drawing.Fonts.System, false, true
             sld.Val = sVal
             function sld:Update(pos)
                 sTxt.Position = pos
                 sVal.Position = pos + Vector2.new(mainSize.X - 50, 0)
-                sBg.Position = pos + Vector2.new(0, 20)
-                sFill.Position = pos + Vector2.new(0, 20)
+                sBg.Position, sFill.Position = pos + Vector2.new(0, 20), pos + Vector2.new(0, 20)
                 local pct = (sld.Value - sld.Min) / (sld.Max - sld.Min)
                 sFill.Size = Vector2.new(sBg.Size.X * pct, 4)
                 sKnob.Position = sFill.Position + Vector2.new(sFill.Size.X, 2)
@@ -323,31 +278,23 @@ function Library:CreateWindow(title, initialSize)
         function tab:CreateDropdown(text, options, callback, multi)
             local drop = {Type = "Dropdown", Height = 40, Callback = callback, Options = options, Open = false, Selected = multi and {} or (options[1] or ""), Multi = multi or false, ScrollIndex = 1, MaxVisible = 6}
             local dropRadius = 5
-            local dBgShapes = createRoundedBox(dropRadius, true)
-            setShapesColor(dBgShapes, colors.ElementBg)
-            drop.BgShapes = dBgShapes
+            drop.BgShapes = createRoundedBox(dropRadius, true)
+            setShapesColor(drop.BgShapes, colors.ElementBg)
             drop.Bg = {Position = Vector2.new(0, 0), Size = Vector2.new(mainSize.X - 40, 36)}
             local dTxt = Drawing.new("Text")
-            dTxt.Size = 14
-            dTxt.Color = colors.Text
-            dTxt.Font = Drawing.Fonts.System
+            dTxt.Size, dTxt.Color, dTxt.Font, dTxt.Visible = 14, colors.Text, Drawing.Fonts.System, false
             drop.Txt = dTxt
             local dArrow = Drawing.new("Triangle")
-            dArrow.Color = colors.Text
-            dArrow.Filled = true
+            dArrow.Color, dArrow.Filled, dArrow.Visible = colors.Text, true, false
             drop.Arrow = dArrow
             local sUp = Drawing.new("Triangle")
-            sUp.Color = colors.Text
-            sUp.Filled, sUp.ZIndex = true, 3
+            sUp.Color, sUp.Filled, sUp.ZIndex, sUp.Visible = colors.Text, true, 3, false
             drop.ScrollUp = sUp
             local sDown = Drawing.new("Triangle")
-            sDown.Color = colors.Text
-            sDown.Filled, sDown.ZIndex = true, 3
+            sDown.Color, sDown.Filled, sDown.ZIndex, sDown.Visible = colors.Text, true, 3, false
             drop.ScrollDown = sDown
             local dListBg = Drawing.new("Square")
-            dListBg.Filled = true
-            dListBg.Color = Color3.fromRGB(28, 28, 28)
-            dListBg.ZIndex = 2
+            dListBg.Filled, dListBg.Color, dListBg.ZIndex, dListBg.Visible = true, Color3.fromRGB(28, 28, 28), 2, false
             drop.ListBg = dListBg
             drop.OptionDrawings = {}
             function drop:Update(pos)
@@ -369,12 +316,12 @@ function Library:CreateWindow(title, initialSize)
                     dArrow.PointA, dArrow.PointB, dArrow.PointC = arrowCenter + Vector2.new(-5, -3), arrowCenter + Vector2.new(5, -3), arrowCenter + Vector2.new(0, 3)
                 end
                 if drop.Open then
-                    local currentOptY = pos.Y + 40
-                    local centerX = pos.X + (mainSize.X - 40) / 2
+                    local curY = pos.Y + 40
+                    local cX = pos.X + (mainSize.X - 40) / 2
                     if drop.ScrollIndex > 1 then
                         drop.ScrollUp.Visible = true
-                        drop.ScrollUp.PointA, drop.ScrollUp.PointB, drop.ScrollUp.PointC = Vector2.new(centerX, currentOptY + 5), Vector2.new(centerX - 6, currentOptY + 15), Vector2.new(centerX + 6, currentOptY + 15)
-                        currentOptY = currentOptY + 20
+                        drop.ScrollUp.PointA, drop.ScrollUp.PointB, drop.ScrollUp.PointC = Vector2.new(cX, curY + 5), Vector2.new(cX - 6, curY + 15), Vector2.new(cX + 6, curY + 15)
+                        curY = curY + 20
                     else drop.ScrollUp.Visible = false end
                     local drawn = 0
                     for i = 0, drop.MaxVisible - 1 do
@@ -383,23 +330,23 @@ function Library:CreateWindow(title, initialSize)
                         drawn = drawn + 1
                         if not drop.OptionDrawings[drawn] then
                             local b, t = Drawing.new("Square"), Drawing.new("Text")
-                            b.Color, b.Filled, b.ZIndex = Color3.fromRGB(28, 28, 28), true, 2
-                            t.Color, t.Size, t.Font, t.Center, t.ZIndex = colors.Text, 13, Drawing.Fonts.System, true, 3
+                            b.Color, b.Filled, b.ZIndex, b.Visible = Color3.fromRGB(28, 28, 28), true, 2, false
+                            t.Color, t.Size, t.Font, t.Center, t.ZIndex, t.Visible = colors.Text, 13, Drawing.Fonts.System, true, 3, false
                             drop.OptionDrawings[drawn] = {Bg = b, Txt = t}
                         end
                         local d = drop.OptionDrawings[drawn]
-                        d.Bg.Visible, d.Bg.Position, d.Bg.Size = true, Vector2.new(pos.X, currentOptY), Vector2.new(mainSize.X - 40, 24)
-                        d.Txt.Visible, d.Txt.Position, d.Txt.Text = true, Vector2.new(pos.X + (mainSize.X - 40)/2, currentOptY + 12), drop.Options[idx]
+                        d.Bg.Visible, d.Bg.Position, d.Bg.Size = true, Vector2.new(pos.X, curY), Vector2.new(mainSize.X - 40, 24)
+                        d.Txt.Visible, d.Txt.Position, d.Txt.Text = true, Vector2.new(pos.X + (mainSize.X - 40)/2, curY + 12), drop.Options[idx]
                         d.Txt.Color = (drop.Multi and drop.Selected[drop.Options[idx]] or drop.Options[idx] == drop.Selected) and colors.Accent or colors.Text
-                        currentOptY = currentOptY + 26
+                        curY = curY + 26
                     end
                     for i = drawn + 1, #drop.OptionDrawings do drop.OptionDrawings[i].Bg.Visible, drop.OptionDrawings[i].Txt.Visible = false, false end
                     if drop.ScrollIndex + drop.MaxVisible <= #drop.Options then
                         drop.ScrollDown.Visible = true
-                        drop.ScrollDown.PointA, drop.ScrollDown.PointB, drop.ScrollDown.PointC = Vector2.new(centerX, currentOptY + 15), Vector2.new(centerX - 6, currentOptY + 5), Vector2.new(centerX + 6, currentOptY + 5)
-                        currentOptY = currentOptY + 20
+                        drop.ScrollDown.PointA, drop.ScrollDown.PointB, drop.ScrollDown.PointC = Vector2.new(cX, curY + 15), Vector2.new(cX - 6, curY + 5), Vector2.new(cX + 6, curY + 5)
+                        curY = curY + 20
                     else drop.ScrollDown.Visible = false end
-                    drop.ListBg.Visible, drop.ListBg.Position, drop.ListBg.Size = true, Vector2.new(pos.X, pos.Y + 40), Vector2.new(mainSize.X - 40, currentOptY - (pos.Y + 40))
+                    drop.ListBg.Visible, drop.ListBg.Position, drop.ListBg.Size = true, Vector2.new(pos.X, pos.Y + 40), Vector2.new(mainSize.X - 40, curY - (pos.Y + 40))
                 else
                     drop.ListBg.Visible, drop.ScrollUp.Visible, drop.ScrollDown.Visible = false, false, false
                     for _, d in pairs(drop.OptionDrawings) do d.Bg.Visible, d.Txt.Visible = false, false end
@@ -428,7 +375,6 @@ function Library:CreateWindow(title, initialSize)
             if iskeypressed(0x5A) and isrbxactive() then
                 if not toggleDebounce then window.Opened = not window.Opened toggleDebounce = true end
             else toggleDebounce = false end
-
             local vis = window.Opened
             for _, s in pairs(mainShapes) do s.Visible = vis end
             for _, s in pairs(topBarShapes) do s.Visible = vis end
@@ -439,18 +385,17 @@ function Library:CreateWindow(title, initialSize)
                 for _, elem in ipairs(tab.Elements) do elem:SetVisible(active) end
             end
             if not vis then continue end
-
             local isPressed, mousePos = ismouse1pressed(), Vector2.new(Mouse.X, Mouse.Y)
             if window.Dragging then
                 if isPressed and isrbxactive() then mainPos = window.StartPos + (mousePos - window.DragStart)
                 else window.Dragging = false end
             end
             if isPressed and isrbxactive() and not wasMousePressed then
-                local consumed, blockingDropdown = false, nil
-                if window.ActiveTab then for _, elem in ipairs(window.ActiveTab.Elements) do if elem.Type == "Dropdown" and elem.Open then blockingDropdown = elem break end end end
-                if blockingDropdown then
-                    if not isMouseOver(blockingDropdown.Bg.Position, blockingDropdown.Bg.Size) and not isMouseOver(blockingDropdown.ListBg.Position, blockingDropdown.ListBg.Size) then
-                        blockingDropdown.Open = false consumed = true
+                local consumed, bDrop = false, nil
+                if window.ActiveTab then for _, elem in ipairs(window.ActiveTab.Elements) do if elem.Type == "Dropdown" and elem.Open then bDrop = elem break end end end
+                if bDrop then
+                    if not isMouseOver(bDrop.Bg.Position, bDrop.Bg.Size) and not isMouseOver(bDrop.ListBg.Position, bDrop.ListBg.Size) then
+                        bDrop.Open = false consumed = true
                     end
                 end
                 if not consumed then
@@ -463,7 +408,7 @@ function Library:CreateWindow(title, initialSize)
                     end
                     if window.ActiveTab then
                         for _, elem in ipairs(window.ActiveTab.Elements) do
-                            if blockingDropdown and elem ~= blockingDropdown then continue end
+                            if bDrop and elem ~= bDrop then continue end
                             if elem.Type == "Button" and isMouseOver(elem.Border.Position, elem.Border.Size) then
                                 elem.ClickTime = os.clock()
                                 setShapesColor(elem.BgShapes, Color3.fromRGB(60, 60, 60))
@@ -474,14 +419,14 @@ function Library:CreateWindow(title, initialSize)
                             elseif elem.Type == "Slider" and isMouseOver(elem.Bg.Position - Vector2.new(0, 10), elem.Bg.Size + Vector2.new(0, 20)) then
                                 sliderDragging = elem
                             elseif elem.Type == "Dropdown" then
-                                local clickedOpt = false
+                                local cO = false
                                 if elem.Open then
                                     local curY = elem.Bg.Position.Y + 40
                                     if elem.ScrollIndex > 1 then
-                                        if isMouseOver(Vector2.new(elem.Bg.Position.X, curY), Vector2.new(elem.Bg.Size.X, 20)) then elem.ScrollIndex = math.max(1, elem.ScrollIndex - 1) clickedOpt = true end
+                                        if isMouseOver(Vector2.new(elem.Bg.Position.X, curY), Vector2.new(elem.Bg.Size.X, 20)) then elem.ScrollIndex = math.max(1, elem.ScrollIndex - 1) cO = true end
                                         curY = curY + 20
                                     end
-                                    if not clickedOpt then
+                                    if not cO then
                                         for i = 0, elem.MaxVisible - 1 do
                                             local idx = elem.ScrollIndex + i
                                             if idx > #elem.Options then break end
@@ -489,16 +434,16 @@ function Library:CreateWindow(title, initialSize)
                                                 local val = elem.Options[idx]
                                                 if elem.Multi then elem.Selected[val] = not elem.Selected[val] task.spawn(elem.Callback, elem.Selected)
                                                 else elem.Selected, elem.Open = val, false task.spawn(elem.Callback, elem.Selected) end
-                                                clickedOpt = true break
+                                                cO = true break
                                             end
                                             curY = curY + 26
                                         end
                                     end
-                                    if not clickedOpt and elem.ScrollIndex + elem.MaxVisible <= #elem.Options then
-                                        if isMouseOver(Vector2.new(elem.Bg.Position.X, curY), Vector2.new(elem.Bg.Size.X, 20)) then elem.ScrollIndex = math.min(#elem.Options - elem.MaxVisible + 1, elem.ScrollIndex + 1) clickedOpt = true end
+                                    if not cO and elem.ScrollIndex + elem.MaxVisible <= #elem.Options then
+                                        if isMouseOver(Vector2.new(elem.Bg.Position.X, curY), Vector2.new(elem.Bg.Size.X, 20)) then elem.ScrollIndex = math.min(#elem.Options - elem.MaxVisible + 1, elem.ScrollIndex + 1) cO = true end
                                     end
                                 end
-                                if not clickedOpt and isMouseOver(elem.Bg.Position, Vector2.new(elem.Bg.Size.X, 36)) then elem.Open = not elem.Open end
+                                if not cO and isMouseOver(elem.Bg.Position, Vector2.new(elem.Bg.Size.X, 36)) then elem.Open = not elem.Open end
                             end
                         end
                     end
@@ -517,18 +462,26 @@ function Library:CreateWindow(title, initialSize)
 
     function window:Destroy()
         window.Destroyed = true
-        for _, s in pairs(mainShapes) do pcall(function() s:Remove() end) end
-        for _, s in pairs(topBarShapes) do pcall(function() s:Remove() end) end
-        pcall(function() titleText:Remove() end)
-        pcall(function() separator:Remove() end)
+        local function SafeRemove(obj)
+            if obj and typeof(obj) == "table" then
+                for _, sub in pairs(obj) do pcall(function() if sub.Remove then sub:Remove() end end) end
+            else
+                pcall(function() if obj and obj.Remove then obj:Remove() end end)
+            end
+        end
+        SafeRemove(mainShapes)
+        SafeRemove(topBarShapes)
+        SafeRemove(titleText)
+        SafeRemove(separator)
         for _, tab in ipairs(window.Tabs) do
-            pcall(function() tab.Btn:Remove() end)
+            SafeRemove(tab.Btn)
             for _, elem in ipairs(tab.Elements) do
-                if elem.Type == "Section" then pcall(function() elem.Txt:Remove() end) pcall(function() elem.Line:Remove() end)
-                elseif elem.Type == "Button" then for _, s in pairs(elem.BorderShapes) do pcall(function() s:Remove() end) end for _, s in pairs(elem.BgShapes) do pcall(function() s:Remove() end) end pcall(function() elem.Txt:Remove() end)
-                elseif elem.Type == "Toggle" then pcall(function() elem.Outer:Remove() end) pcall(function() elem.Hole:Remove() end) pcall(function() elem.Inner:Remove() end) pcall(function() elem.Txt:Remove() end)
-                elseif elem.Type == "Slider" then pcall(function() elem.Bg:Remove() end) pcall(function() elem.Fill:Remove() end) pcall(function() elem.Knob:Remove() end) pcall(function() elem.Txt:Remove() end) pcall(function() elem.Val:Remove() end)
-                elseif elem.Type == "Dropdown" then pcall(function() elem.Bg:Remove() end) pcall(function() elem.Txt:Remove() end) pcall(function() elem.Arrow:Remove() end) pcall(function() elem.ScrollUp:Remove() end) pcall(function() elem.ScrollDown:Remove() end) pcall(function() elem.ListBg:Remove() end) for _, d in pairs(elem.OptionDrawings) do pcall(function() d.Bg:Remove() end) pcall(function() d.Txt:Remove() end) end
+                if elem.Type == "Section" then SafeRemove(elem.Txt) SafeRemove(elem.Line)
+                elseif elem.Type == "Button" then SafeRemove(elem.BorderShapes) SafeRemove(elem.BgShapes) SafeRemove(elem.Txt)
+                elseif elem.Type == "Toggle" then SafeRemove(elem.Outer) SafeRemove(elem.Hole) SafeRemove(elem.Inner) SafeRemove(elem.Txt)
+                elseif elem.Type == "Slider" then SafeRemove(elem.Bg) SafeRemove(elem.Fill) SafeRemove(elem.Knob) SafeRemove(elem.Txt) SafeRemove(elem.Val)
+                elseif elem.Type == "Dropdown" then SafeRemove(elem.BgShapes) SafeRemove(elem.Bg) SafeRemove(elem.Txt) SafeRemove(elem.Arrow) SafeRemove(elem.ScrollUp) SafeRemove(elem.ScrollDown) SafeRemove(elem.ListBg)
+                    for _, d in pairs(elem.OptionDrawings) do SafeRemove(d.Bg) SafeRemove(d.Txt) end
                 end
             end
         end
